@@ -1,0 +1,44 @@
+{
+  "companyName": "{{TENANT}}",
+  "dailyLimits": {
+    "meals": {
+      "domestic": {
+        "breakfast": 25,
+        "lunch": 35,
+        "dinner": 75,
+        "total": 135
+      },
+      "international": {
+        "breakfast": 35,
+        "lunch": 50,
+        "dinner": 100,
+        "total": 185
+      }
+    },
+    "lodging": {
+      "tier1Cities": 350,
+      "tier2Cities": 250,
+      "tier3Cities": 150
+    },
+    "transportation": {
+      "taxi": 100,
+      "rental": 80,
+      "parking": 25,
+      "mileage": 0.65
+    }
+  },
+  "approvalThresholds": {
+    "trip": {
+      "manager": 5000,
+      "director": 15000,
+      "vp": 50000
+    },
+    "individual": {
+      "meal": 200,
+      "lodging": 500,
+      "transportation": 300
+    }
+  },
+  "currency": "USD",
+  "effectiveDate": "2024-01-01"
+}

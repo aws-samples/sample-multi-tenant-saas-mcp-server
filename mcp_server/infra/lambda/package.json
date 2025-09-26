@@ -1,0 +1,49 @@
+{
+  "name": "mcp-server-cognito-triggers",
+  "version": "1.0.0",
+  "description": "Lambda functions for Cognito triggers in MCP Server",
+  "main": "post-confirmation-handler.js",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.800.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.0",
+    "jest": "^29.7.0"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "openid-config.js"
+    ],
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      }
+    }
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "cognito",
+    "mcp",
+    "multi-tenant"
+  ],
+  "author": "MCP Server Team",
+  "license": "Apache-2.0"
+}

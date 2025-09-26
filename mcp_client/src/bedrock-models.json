@@ -1,0 +1,209 @@
+[
+  {
+    "id": "amazon-nova-lite",
+    "source": 1,
+    "name": "us.amazon.nova-lite-v1:0",
+    "description": "Amazon's Nova Lite model for fast and efficient multimodal AI tasks",
+    "task": {
+      "id": "text-generation",
+      "name": "Text Generation",
+      "description": "Generate human-like text based on input prompts"
+    },
+    "created_at": "2024-12-01T00:00:00Z",
+    "tags": ["amazon", "nova", "lite", "multimodal"],
+    "properties": [
+      {
+        "property_id": "max_tokens",
+        "value": "4096"
+      },
+      {
+        "property_id": "context_length",
+        "value": "300000"
+      }
+    ]
+  },
+  {
+    "id": "amazon-nova-micro",
+    "source": 1,
+    "name": "us.amazon.nova-micro-v1:0",
+    "description": "Amazon's Nova Micro model for lightweight text generation tasks",
+    "task": {
+      "id": "text-generation",
+      "name": "Text Generation",
+      "description": "Generate human-like text based on input prompts"
+    },
+    "created_at": "2024-12-01T00:00:00Z",
+    "tags": ["amazon", "nova", "micro", "lightweight"],
+    "properties": [
+      {
+        "property_id": "max_tokens",
+        "value": "4096"
+      },
+      {
+        "property_id": "context_length",
+        "value": "128000"
+      }
+    ]
+  },
+  {
+    "id": "amazon-nova-pro",
+    "source": 1,
+    "name": "us.amazon.nova-pro-v1:0",
+    "description": "Amazon's Nova Pro model for advanced multimodal AI capabilities",
+    "task": {
+      "id": "text-generation",
+      "name": "Text Generation",
+      "description": "Generate human-like text based on input prompts"
+    },
+    "created_at": "2024-12-01T00:00:00Z",
+    "tags": ["amazon", "nova", "pro", "multimodal", "advanced"],
+    "properties": [
+      {
+        "property_id": "max_tokens",
+        "value": "8192"
+      },
+      {
+        "property_id": "context_length",
+        "value": "300000"
+      }
+    ]
+  },
+  {
+    "id": "anthropic-claude-3-haiku",
+    "source": 2,
+    "name": "us.anthropic.claude-3-haiku-20240307-v1:0",
+    "description": "Anthropic's Claude 3 Haiku model for fast and efficient responses",
+    "task": {
+      "id": "text-generation",
+      "name": "Text Generation",
+      "description": "Generate human-like text based on input prompts"
+    },
+    "created_at": "2024-03-01T00:00:00Z",
+    "tags": ["claude", "anthropic", "haiku", "fast"],
+    "properties": [
+      {
+        "property_id": "max_tokens",
+        "value": "4096"
+      },
+      {
+        "property_id": "context_length",
+        "value": "200000"
+      }
+    ]
+  },
+  {
+    "id": "anthropic-claude-3-sonnet",
+    "source": 2,
+    "name": "us.anthropic.claude-3-sonnet-20240229-v1:0",
+    "description": "Anthropic's Claude 3 Sonnet model for balanced performance and capability",
+    "task": {
+      "id": "text-generation",
+      "name": "Text Generation",
+      "description": "Generate human-like text based on input prompts"
+    },
+    "created_at": "2024-03-01T00:00:00Z",
+    "tags": ["claude", "anthropic", "sonnet"],
+    "properties": [
+      {
+        "property_id": "max_tokens",
+        "value": "4096"
+      },
+      {
+        "property_id": "context_length",
+        "value": "200000"
+      }
+    ]
+  },
+  {
+    "id": "anthropic-claude-3-5-sonnet",
+    "source": 2,
+    "name": "us.anthropic.claude-3-5-sonnet-20241022-v2:0",
+    "description": "Anthropic's Claude 3.5 Sonnet v2 model with enhanced capabilities",
+    "task": {
+      "id": "text-generation",
+      "name": "Text Generation",
+      "description": "Generate human-like text based on input prompts"
+    },
+    "created_at": "2024-10-01T00:00:00Z",
+    "tags": ["claude", "anthropic", "sonnet", "3.5", "v2"],
+    "properties": [
+      {
+        "property_id": "max_tokens",
+        "value": "8192"
+      },
+      {
+        "property_id": "context_length",
+        "value": "200000"
+      }
+    ]
+  },
+  {
+    "id": "anthropic-claude-3-5-haiku",
+    "source": 2,
+    "name": "us.anthropic.claude-3-5-haiku-20241022-v1:0",
+    "description": "Anthropic's Claude 3.5 Haiku model for fast responses with enhanced capabilities",
+    "task": {
+      "id": "text-generation",
+      "name": "Text Generation",
+      "description": "Generate human-like text based on input prompts"
+    },
+    "created_at": "2024-10-01T00:00:00Z",
+    "tags": ["claude", "anthropic", "haiku", "3.5", "fast"],
+    "properties": [
+      {
+        "property_id": "max_tokens",
+        "value": "8192"
+      },
+      {
+        "property_id": "context_length",
+        "value": "200000"
+      }
+    ]
+  },
+  {
+    "id": "anthropic-claude-3-7-sonnet",
+    "source": 2,
+    "name": "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+    "description": "Anthropic's Claude 3.7 Sonnet model with advanced reasoning and enhanced capabilities",
+    "task": {
+      "id": "text-generation",
+      "name": "Text Generation",
+      "description": "Generate human-like text based on input prompts"
+    },
+    "created_at": "2025-02-19T00:00:00Z",
+    "tags": ["claude", "anthropic", "sonnet", "3.7", "advanced"],
+    "properties": [
+      {
+        "property_id": "max_tokens",
+        "value": "8192"
+      },
+      {
+        "property_id": "context_length",
+        "value": "300000"
+      }
+    ]
+  },
+  {
+    "id": "anthropic-claude-4-sonnet",
+    "source": 2,
+    "name": "us.anthropic.claude-sonnet-4-20250514-v1:0",
+    "description": "Anthropic's Claude 4 Sonnet model with next-generation AI capabilities",
+    "task": {
+      "id": "text-generation",
+      "name": "Text Generation",
+      "description": "Generate human-like text based on input prompts"
+    },
+    "created_at": "2025-05-14T00:00:00Z",
+    "tags": ["claude", "anthropic", "sonnet", "4", "next-gen"],
+    "properties": [
+      {
+        "property_id": "max_tokens",
+        "value": "8192"
+      },
+      {
+        "property_id": "context_length",
+        "value": "500000"
+      }
+    ]
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "companyName": "{{TENANT}}",
+  "preferredAirlines": [
+    {
+      "airline": "American Airlines",
+      "code": "AA",
+      "priority": 1,
+      "corporateDiscount": "15%"
+    },
+    {
+      "airline": "Delta Air Lines",
+      "code": "DL",
+      "priority": 2,
+      "corporateDiscount": "12%"
+    },
+    {
+      "airline": "United Airlines",
+      "code": "UA",
+      "priority": 3,
+      "corporateDiscount": "10%"
+    }
+  ],
+  "allowedClasses": {
+    "domestic": ["Economy", "Premium Economy"],
+    "international": ["Economy", "Premium Economy", "Business"],
+    "executiveLevel": ["Business", "First"]
+  },
+  "bookingRules": {
+    "advanceBookingDays": 14,
+    "maxTripDuration": 30,
+    "requireApprovalOver": "$2000"
+  },
+  "blacklistedAirlines": [],
+  "lastUpdated": "2024-12-01"
+}

@@ -1,0 +1,50 @@
+{
+  "companyName": "{{TENANT}}",
+  "visaPolicy": {
+    "requiresApproval": true,
+    "processingTimeMinDays": 30,
+    "corporateVisaService": "GlobalVisa Corp",
+    "contactEmail": "visa-support@{{TENANT}}.com"
+  },
+  "commonDestinations": {
+    "noVisaRequired": [
+      {"country": "Canada", "maxStay": "6 months", "requirements": ["Valid passport"]},
+      {"country": "United Kingdom", "maxStay": "6 months", "requirements": ["Valid passport"]},
+      {"country": "Germany", "maxStay": "90 days", "requirements": ["Valid passport"]},
+      {"country": "Japan", "maxStay": "90 days", "requirements": ["Valid passport"]}
+    ],
+    "visaRequired": [
+      {
+        "country": "China",
+        "visaType": "Business (M)",
+        "processingDays": "10-15",
+        "requirements": ["Valid passport", "Invitation letter", "Business license"],
+        "cost": "$140"
+      },
+      {
+        "country": "India",
+        "visaType": "Business (B)",
+        "processingDays": "5-7",
+        "requirements": ["Valid passport", "Business invitation", "Company letter"],
+        "cost": "$100"
+      },
+      {
+        "country": "Russia",
+        "visaType": "Business",
+        "processingDays": "20-30",
+        "requirements": ["Valid passport", "Invitation", "Medical insurance"],
+        "cost": "$160"
+      }
+    ]
+  },
+  "documentation": {
+    "passportValidity": "6 months minimum",
+    "blankPages": "2 pages minimum",
+    "photos": "2 recent passport photos"
+  },
+  "emergencyVisaContacts": {
+    "expediteService": "+1-800-VISA-NOW",
+    "consulateEmergency": "+1-800-CONSULATE"
+  },
+  "lastUpdated": "2024-12-01"
+}

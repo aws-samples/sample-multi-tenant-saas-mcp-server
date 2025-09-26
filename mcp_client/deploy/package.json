@@ -1,0 +1,36 @@
+{
+  "name": "mcp-playground-deployment",
+  "version": "1.0.0",
+  "description": "AWS CDK deployment for MCP Playground TypeScript Client",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "deploy": "cdk deploy",
+    "destroy": "cdk destroy",
+    "synth": "cdk synth",
+    "bootstrap": "cdk bootstrap",
+    "nag-check": "cdk synth --quiet",
+    "security-check": "npm run build && npm run nag-check"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/jest": "^29.4.0",
+    "@types/node": "^22.10.2",
+    "aws-cdk": "^2.215.0",
+    "jest": "^29.4.0",
+    "ts-jest": "^29.0.5",
+    "typescript": "~4.9.4"
+  },
+  "dependencies": {
+    "@ai-sdk/amazon-bedrock": "^1.0.2",
+    "@modelcontextprotocol/sdk": "^1.18.0",
+    "ai": "^4.0.0",
+    "aws-cdk-lib": "^2.215.0",
+    "cdk-nag": "^2.27.0",
+    "constructs": "^10.0.0",
+    "jsonwebtoken": "9.0.2",
+    "jwks-client": "2.0.5"
+  }
+}

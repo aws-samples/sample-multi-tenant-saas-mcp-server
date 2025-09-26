@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+html,
+body,
+#root {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+}
+
+.bg-ai {
+	background-image: linear-gradient(75deg, #232F3E, #FF9900, #FFAC33);
+}
+
+.bg-ai-loop {
+	background-image: linear-gradient(75deg, #232F3E, #FF9900, #FFAC33, #FF9900, #232F3E);
+}
+
+button {
+	cursor: pointer;
+}
+
+/* AWS Orange color utilities */
+.text-aws-orange {
+	color: #FF9900;
+}
+
+.text-aws-orange-dark {
+	color: #E88B00;
+}
+
+.border-aws-orange {
+	border-color: #FF9900;
+}
+
+/* Markdown styling for assistant messages */
+.markdown-content {
+	line-height: 1.6;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+	margin-top: 1.5em;
+	margin-bottom: 0.5em;
+	font-weight: 600;
+}
+
+.markdown-content h1 { font-size: 1.5em; }
+.markdown-content h2 { font-size: 1.3em; }
+.markdown-content h3 { font-size: 1.1em; }
+
+.markdown-content p {
+	margin-bottom: 1em;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+	margin-bottom: 1em;
+	padding-left: 1.5em;
+}
+
+.markdown-content li {
+	margin-bottom: 0.25em;
+}
+
+.markdown-content blockquote {
+	border-left: 4px solid #FF9900;
+	padding-left: 1em;
+	margin: 1em 0;
+	font-style: italic;
+	background-color: #f8f9fa;
+}
+
+.markdown-content table {
+	border-collapse: collapse;
+	width: 100%;
+	margin: 1em 0;
+}
+
+.markdown-content th,
+.markdown-content td {
+	border: 1px solid #ddd;
+	padding: 0.5em;
+	text-align: left;
+}
+
+.markdown-content th {
+	background-color: #f8f9fa;
+	font-weight: 600;
+}

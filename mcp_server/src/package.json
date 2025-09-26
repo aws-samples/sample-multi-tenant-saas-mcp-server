@@ -1,0 +1,33 @@
+{
+  "type": "module",
+  "version": "0.0.175",
+  "author": "EMEA ISV SA",
+  "license": "Apache-2.0",
+  "description": "A sample multi-tenant SaaS MCP server",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.806.0",
+    "@aws-sdk/client-s3": "^3.808.0",
+    "@aws-sdk/client-sts": "^3.806.0",
+    "@aws-sdk/lib-dynamodb": "^3.806.0",
+    "@faker-js/faker": "^9.7.0",
+    "@modelcontextprotocol/sdk": "^1.11.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.1.0",
+    "log4js": "^6.9.1",
+    "typescript": "^5.8.3"
+  },
+  "scripts": {
+    "build": "tsc && cp *.js *.json dist/ && cp -r prompts mcp auth dist/",
+    "start": "npx tsx --env-file=.env --watch index.js",
+    "start:prod": "node dist/index.js",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "jest": "^29.7.0"
+  }
+}

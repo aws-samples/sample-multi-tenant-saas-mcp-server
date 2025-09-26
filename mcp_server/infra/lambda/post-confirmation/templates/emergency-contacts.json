@@ -1,0 +1,44 @@
+{
+  "companyName": "{{TENANT}}",
+  "emergencyContacts": {
+    "primary": {
+      "name": "{{TENANT}} Travel Emergency Desk",
+      "phone": "+1-800-TRAVEL-1",
+      "email": "emergency-travel@{{TENANT}}.com",
+      "available": "24/7"
+    },
+    "medical": {
+      "name": "International Medical Assistance",
+      "phone": "+1-800-MEDICAL",
+      "email": "medical@travelassist.com",
+      "coverage": "Worldwide"
+    },
+    "security": {
+      "name": "Corporate Security",
+      "phone": "+1-800-SECURITY",
+      "email": "security@{{TENANT}}.com",
+      "available": "24/7"
+    }
+  },
+  "regionalContacts": {
+    "americas": {
+      "phone": "+1-555-TRAVEL",
+      "timezone": "EST"
+    },
+    "emea": {
+      "phone": "+44-20-TRAVEL",
+      "timezone": "GMT"
+    },
+    "apac": {
+      "phone": "+65-TRAVEL",
+      "timezone": "SGT"
+    }
+  },
+  "instructions": [
+    "Contact emergency desk immediately for any travel-related emergencies",
+    "Provide employee ID and travel confirmation number",
+    "For medical emergencies, contact local emergency services first",
+    "Report all incidents to security within 24 hours"
+  ],
+  "lastUpdated": "2024-12-01"
+}

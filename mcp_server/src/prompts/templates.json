@@ -1,0 +1,170 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "description": "MCP prompt templates for travel booking assistant"
+  },
+  "system_instructions": {
+    "base": "You are a helpful travel booking assistant with access to flight search, hotel search, booking capabilities, and loyalty program information.",
+    "policy_aware": "Always check company travel policy before making recommendations. Ensure all bookings comply with corporate guidelines.",
+    "cost_conscious": "Prioritize cost-effective options while maintaining traveler comfort and productivity."
+  },
+  "response_formats": {
+    "flight_listing": "Format flights as: [Flight#] [Airline] [Time] [Duration] [Stops] [Price]",
+    "hotel_listing": "Format hotels as: [Hotel Name] [Rating] [Price/night] [Distance] [Amenities]",
+    "booking_confirmation": "Include confirmation number, total cost, and loyalty points earned"
+  },
+  "error_messages": {
+    "auth_required": "This operation requires authentication. Please provide a valid token.",
+    "booking_failed": "Unable to complete booking. Please check your details and try again.",
+    "policy_violation": "This booking violates company travel policy. Please select an alternative."
+  },
+  "prompts": {
+    "flight_search": {
+      "name": "flight_search",
+      "description": "Guide for searching flights with preferences",
+      "arguments": [
+        {
+          "name": "origin",
+          "description": "Departure city or airport code",
+          "required": true
+        },
+        {
+          "name": "destination", 
+          "description": "Arrival city or airport code",
+          "required": true
+        },
+        {
+          "name": "date",
+          "description": "Travel date (YYYY-MM-DD)",
+          "required": true
+        },
+        {
+          "name": "preferences",
+          "description": "Travel preferences (e.g., nonstop, morning)",
+          "required": false
+        }
+      ],
+      "template": "I'll help you search for flights from {{origin}} to {{destination}} on {{date}}.\n\nLet me search for available options using the flight search tool.\n\n<use_tool>\nfind_flights with origin: \"{{origin}}\", destination: \"{{destination}}\", departure: \"{{date}}\"\n</use_tool>\n\nBased on your preferences: {{preferences}}\n\nI'll analyze the results and highlight:\n1. Best value options\n2. Most convenient times\n3. Loyalty program benefits\n4. Available seat classes\n\nWould you like me to search for return flights as well?"
+    },
+    "booking_flow": {
+      "name": "booking_flow",
+      "description": "Complete travel booking workflow with policy compliance",
+      "arguments": [],
+      "template": "I'll guide you through the complete travel booking process.\n\nFirst, let's check your current bookings to avoid conflicts:\n<use_tool>list_bookings</use_tool>\n\nNext, I'll need to know:\n1. Your travel dates and destination\n2. Whether you need flights, hotels, or both\n3. Your budget preferences\n4. Any loyalty programs you want to use\n\nI'll also check the company travel policy:\n<use_resource>file://travel/policy</use_resource>\n\nOnce we have your preferences, I'll:\n- Search for the best options\n- Compare prices and benefits\n- Check policy compliance\n- Handle the booking\n\nWhat type of trip are you planning?"
+    },
+    "loyalty_overview": {
+      "name": "loyalty_overview",
+      "description": "Check all loyalty program statuses",
+      "arguments": [],
+      "template": "Let me check all your loyalty program statuses.\n\n<use_tool>loyalty_info</use_tool>\n\nI'll provide you with:\n- Current points/miles balance for each program\n- Your tier status and benefits\n- Points needed for next tier\n- Recommendations for maximizing rewards\n\nThis will help you choose the best airline or hotel for earning and redeeming points."
+    },
+    "policy_compliant_booking": {
+      "name": "policy_compliant_booking",
+      "description": "Book travel following company policy",
+      "arguments": [
+        {
+          "name": "trip_type",
+          "description": "Type of trip: business or personal",
+          "required": true
+        },
+        {
+          "name": "budget",
+          "description": "Maximum budget for the trip",
+          "required": false
+        }
+      ],
+      "template": "I'll help you book {{trip_type}} travel while ensuring compliance with company policy.\n\nFirst, let me check the travel policy for {{trip_type}} trips:\n<use_resource>travelpolicy://tenant</use_resource>\n\nKey policy points to consider:\n- Approved vendors and booking classes\n- Per diem limits and expense guidelines\n- Advance booking requirements\n- Required approvals\n\n{{budget_text}}I'll ensure all bookings comply with these guidelines.\n\nWhat are your travel dates and destination?"
+    },
+    "hotel_search": {
+      "name": "hotel_search",
+      "description": "Search for available hotels in a city with preferences",
+      "arguments": [
+        {
+          "name": "city",
+          "description": "City name to search for hotels",
+          "required": true
+        },
+        {
+          "name": "checkIn",
+          "description": "Check-in date (YYYY-MM-DD)",
+          "required": true
+        },
+        {
+          "name": "checkOut",
+          "description": "Check-out date (YYYY-MM-DD)",
+          "required": true
+        },
+        {
+          "name": "guests",
+          "description": "Number of guests (1-10)",
+          "required": false
+        }
+      ],
+      "template": "I'll help you find hotels in {{city}} for your stay from {{checkIn}} to {{checkOut}}.\n\nLet me search for available accommodations.\n\n<use_tool>\nlist_hotels with city: \"{{city}}\", checkIn: \"{{checkIn}}\", checkOut: \"{{checkOut}}\", guests: {{guests}}\n</use_tool>\n\nI'll show you hotels with:\n1. Best rates and availability\n2. Location and distance to city center\n3. Amenities and ratings\n4. Loyalty program benefits\n\nWould you like me to filter by specific amenities or price range?"
+    },
+    "book_flight_demo": {
+      "name": "book_flight_demo",
+      "description": "Demonstrate flight booking process with specific flight details",
+      "arguments": [
+        {
+          "name": "flightNumber",
+          "description": "Flight number to book",
+          "required": true
+        },
+        {
+          "name": "departure",
+          "description": "Departure date (YYYY-MM-DD)",
+          "required": true
+        },
+        {
+          "name": "flightClass",
+          "description": "Flight class (economy, business, first)",
+          "required": true
+        },
+        {
+          "name": "frequentFlyerNumber",
+          "description": "Frequent flyer number (optional)",
+          "required": false
+        }
+      ],
+      "template": "I'll proceed with booking flight {{flightNumber}} on {{departure}} in {{flightClass}} class.\n\nFirst, let me check your current bookings to avoid conflicts:\n<use_tool>list_bookings</use_tool>\n\nNow I'll process your flight booking:\n\n<use_tool>\nbook_flight with flightNumber: \"{{flightNumber}}\", departure: \"{{departure}}\", flightClass: \"{{flightClass}}\", frequentFlyerNumber: \"{{frequentFlyerNumber}}\"\n</use_tool>\n\nI'll provide you with:\n- Booking confirmation details\n- Total cost and payment information\n- Frequent flyer miles earned\n- Next steps for check-in"
+    },
+    "book_hotel_demo": {
+      "name": "book_hotel_demo",
+      "description": "Demonstrate hotel booking process with specific hotel details",
+      "arguments": [
+        {
+          "name": "hotelName",
+          "description": "Hotel name to book",
+          "required": true
+        },
+        {
+          "name": "checkIn",
+          "description": "Check-in date (YYYY-MM-DD)",
+          "required": true
+        },
+        {
+          "name": "checkOut",
+          "description": "Check-out date (YYYY-MM-DD)",
+          "required": true
+        },
+        {
+          "name": "roomType",
+          "description": "Room type (standard, deluxe, suite)",
+          "required": true
+        },
+        {
+          "name": "guests",
+          "description": "Number of guests (1-10)",
+          "required": false
+        },
+        {
+          "name": "loyaltyNumber",
+          "description": "Hotel loyalty program number (optional)",
+          "required": false
+        }
+      ],
+      "template": "I'll proceed with booking {{hotelName}} from {{checkIn}} to {{checkOut}} for a {{roomType}} room.\n\nFirst, let me check your existing reservations:\n<use_tool>list_bookings</use_tool>\n\nNow I'll process your hotel reservation:\n\n<use_tool>\nbook_hotel with hotelName: \"{{hotelName}}\", checkIn: \"{{checkIn}}\", checkOut: \"{{checkOut}}\", roomType: \"{{roomType}}\", guests: {{guests}}, loyaltyNumber: \"{{loyaltyNumber}}\"\n</use_tool>\n\nI'll provide you with:\n- Reservation confirmation number\n- Total cost and payment details\n- Loyalty points earned\n- Hotel amenities and policies"
+    }
+  }
+}

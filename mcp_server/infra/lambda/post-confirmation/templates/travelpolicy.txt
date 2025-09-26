@@ -1,0 +1,64 @@
+{{TENANT}}
+
+Effective Date: May 12, 2025
+
+This policy outlines the guidelines and procedures for all business-related travel undertaken by employees of {{TENANT}} The goal of this policy is to ensure efficient and cost-effective travel while providing employees with comfortable and safe travel arrangements.
+
+1. Scope
+
+This policy applies to all employees of {{TENANT}} who are required to travel for business purposes.
+
+2. Travel Authorization
+
+All business travel must be pre-approved by the employee's direct manager or department head. A travel request form, outlining the purpose, destination, duration, and estimated cost of the trip, must be submitted and approved prior to making any travel arrangements.
+
+3. Travel Classes and Expense Limits by Job Role
+
+The following guidelines outline the permissible travel class and daily expense limits for different job roles within {{TENANT}}:
+
+3.1 Air Travel
+
+    Employees are expected to book the most economical airfare available within their designated travel class, considering factors such as flight schedules and convenience.
+    Advance booking is encouraged to secure lower fares.
+    Direct flights should be preferred when the cost difference is reasonable.
+    Any exceptions to the specified travel class require prior written approval from a member of the Executive team.
+
+3.2 Accommodation
+
+    Hotel accommodations should be reasonable and business-appropriate. Employees should prioritize hotels that offer corporate rates or discounts.
+    The daily accommodation limits are inclusive of all hotel charges, excluding business-related expenses such as internet access required for work.
+    Staying with friends or family is permitted; in such cases, a modest hospitality allowance (up to €50 per night) may be claimed with proper receipts.
+
+3.3 Meals and Incidentals
+
+    The daily limit for meals and incidentals covers all meals (breakfast, lunch, and dinner), tips, and other miscellaneous expenses such as laundry or local phone calls.
+    Employees are expected to exercise reasonable judgment and avoid excessive spending.
+    Alcoholic beverages are generally not reimbursable unless part of a pre-approved business meal with clients or partners.
+
+3.4 Ground Transportation
+
+    Employees should utilize the most cost-effective and efficient mode of ground transportation suitable for their role and the location.
+    Executives may utilize car services or taxis for convenience and efficiency.
+    Managers are encouraged to use taxis or public transport.
+    Individual Contributors are expected to primarily use public transport or shared ride services where available and cost-effective.
+    Rental cars may be approved when public transportation is impractical or more expensive, subject to manager approval. The smallest suitable vehicle should be rented.
+
+4. Expense Reporting
+
+    All travel-related expenses must be documented and submitted through the company's expense reporting system within 14 days of the completion of the trip.
+    Original receipts are required for all expenses exceeding €25.
+    Expense reports must clearly indicate the business purpose of each expense.
+    Any expenses exceeding the specified limits or deviating from this policy must be accompanied by a clear explanation and may require additional approval.
+
+5. Policy Compliance
+
+Failure to comply with this travel policy may result in the non-reimbursement of expenses or disciplinary action.
+
+6. Policy Review
+
+This travel policy will be reviewed periodically and may be updated as necessary to reflect the evolving needs of {{TENANT}}
+
+7. Contact Information
+
+For any questions or clarifications regarding this travel policy, please contact the Finance Department at finance@innovatesolutions.inc.
+
