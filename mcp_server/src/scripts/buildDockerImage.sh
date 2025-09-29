@@ -75,7 +75,7 @@ else
 fi
 
 if [ "$CONTAINER_TOOL" = "docker" ]; then
-  docker build --platform linux/arm64 $NETWORK_OPTION -t $LOCAL_TAG .
+  docker buildx build --platform linux/arm64 $NETWORK_OPTION -t $LOCAL_TAG --load .
   
   # Tag with ECR URI if specified
   if [ -n "$ECR_REPO_URI" ]; then
