@@ -150,6 +150,9 @@ The DCR implementation uses a DynamoDB table (`MCPServerPublicClients`) to secur
 }
 ```
 
+Please note that if you register a public client with a localhost redirect_uri that is already registered, the client_id already registered for this redirect_uri will be returned.
+As defined in [RFC9700](https://datatracker.ietf.org/doc/rfc9700/), we recommend that you enforce PKCE in those use cases at least.
+
 ## Directory Structure
 
 - **[src/](./src/README.md)** - MCP server implementation, tools, and development workflow
