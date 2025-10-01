@@ -161,6 +161,10 @@ fi
 # Save configuration before deployment
 save_config
 
+# Bootstrap CDK (if not already done)
+echo "🔧 Bootstrapping CDK..."
+npx cdk bootstrap
+
 # Set environment variables for deployment
 export CERTIFICATE_ARN="$CERTIFICATE_ARN"
 export HOSTED_ZONE_ID="$HOSTED_ZONE_ID"

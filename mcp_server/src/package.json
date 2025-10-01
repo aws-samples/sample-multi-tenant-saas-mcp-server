@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "version": "0.0.175",
+  "version": "0.0.178",
   "author": "EMEA ISV SA",
   "license": "Apache-2.0",
   "description": "A sample multi-tenant SaaS MCP server",
