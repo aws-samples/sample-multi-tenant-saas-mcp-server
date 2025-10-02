@@ -33,27 +33,41 @@ export async function handleMcpProxy(request: McpProxyRequest): Promise<McpProxy
       fullUrl = decodeURIComponent(fullUrl);
     }
 
-    console.log(`MCP Proxy: ${request.method} ${fullUrl}`);
-
-    // Validate the URL
+    // Validate URL and block internal networks
+    let parsedUrl: URL;
     try {
-      new URL(fullUrl);
-    } catch (urlError) {
-      console.error(`Invalid URL: ${fullUrl}`);
+      parsedUrl = new URL(fullUrl);
+    } catch {
       return {
         statusCode: 400,
-        headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-custom-auth-header',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          error: 'Invalid URL',
-          details: `Failed to parse URL: ${fullUrl}`,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Invalid URL format' })
       };
     }
+
+    // Block internal networks and metadata services
+    const hostname = parsedUrl.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || 
+        hostname.startsWith('10.') || hostname.startsWith('192.168.') ||
+        /^172\.(1[6-9]|2[0-9]|3[01])\./.test(hostname) ||
+        hostname === '169.254.169.254') {
+      return {
+        statusCode: 403,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Access to internal networks blocked' })
+      };
+    }
+
+    // Prevent path traversal
+    if (parsedUrl.pathname.includes('../')) {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Path traversal not allowed' })
+      };
+    }
+
+    console.log(`MCP Proxy: ${request.method} ${fullUrl}`);
 
     const fetchOptions: RequestInit = {
       method: request.method,
