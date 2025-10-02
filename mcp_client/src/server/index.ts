@@ -212,7 +212,7 @@ app.all("/api/mcp-proxy/*", async (req, res) => {
 		});
 
 		// Send response
-		res.status(proxyResponse.statusCode).send(proxyResponse.body);
+		res.status(proxyResponse.statusCode).json(proxyResponse.body);
 	} catch (error) {
 		console.error("MCP Proxy error:", error);
 		res.status(500).json({ 
