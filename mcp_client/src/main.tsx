@@ -99,15 +99,34 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
   }
   
   // Check if this is a request to an external server (not localhost and not our own proxy)
-  if (url.startsWith('https://') && 
-      !url.includes('localhost') && 
-      !url.includes('127.0.0.1') &&
-      !url.includes('/api/mcp-proxy/') && // Don't proxy our own proxy requests!
-      !url.includes('cognito-idp.') && // Don't proxy Cognito Identity Provider API calls
-      !url.includes('cognito-identity.') && // Don't proxy Cognito Identity API calls
-      !url.includes('.amazoncognito.com') && // Don't proxy any Cognito OAuth servers
-      !url.includes(window.location.hostname) // Don't proxy requests to same domain
-  ) {
+  if (url.startsWith('https://')) {
+    try {
+      const parsedUrl = new URL(url);
+      const hostname = parsedUrl.hostname;
+      
+      // Skip proxy for these hostnames
+      const skipProxyHosts = [
+        'localhost',
+        '127.0.0.1',
+        window.location.hostname
+      ];
+      
+      const skipProxyPatterns = [
+        /\.amazoncognito\.com$/,
+        /cognito-idp\./,
+        /cognito-identity\./
+      ];
+      
+      // Don't proxy our own proxy requests
+      if (parsedUrl.pathname.includes('/api/mcp-proxy/')) {
+        return originalFetch(url, init);
+      }
+      
+      // Check if hostname should skip proxy
+      const shouldSkipProxy = skipProxyHosts.includes(hostname) || 
+        skipProxyPatterns.some(pattern => pattern.test(hostname));
+      
+      if (!shouldSkipProxy) {
     
     // Redirect ALL external requests through our proxy
     const proxyUrl = `${window.location.origin}/api/mcp-proxy/${encodeURIComponent(url)}`;
@@ -119,6 +138,11 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     } catch (error) {
       console.error("❌ PROXY REQUEST FAILED:", error);
       throw error;
+    }
+      }
+    } catch (error) {
+      // If URL parsing fails, don't proxy
+      console.warn("Failed to parse URL for proxy check:", url);
     }
   }
   
