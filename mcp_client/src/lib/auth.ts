@@ -141,6 +141,36 @@ export class PlaygroundOAuthClientProvider implements OAuthClientProvider {
     return this.serverUrl;
   }
 
+  // Custom resource URL validation for proxy scenarios
+  async validateResourceURL(defaultResource: URL, configuredResource?: string): Promise<URL | undefined> {
+    if (!configuredResource) {
+      return undefined;
+    }
+
+    const configuredUrl = new URL(configuredResource);
+    const defaultUrl = defaultResource;
+    
+    // If the default resource (expected) is a proxy URL and configured resource is our original server, allow it
+    if (this.proxyUrl && defaultUrl.href === this.proxyUrl && configuredResource === this.serverUrl) {
+      return defaultUrl; // Return the proxy URL
+    }
+    
+    // If the default resource contains our proxy pattern and configured resource is our server, allow it
+    if (defaultUrl.href.includes('/api/mcp-proxy/') && 
+        defaultUrl.href.includes(encodeURIComponent(this.serverUrl)) &&
+        configuredResource === this.serverUrl) {
+      return defaultUrl; // Return the proxy URL
+    }
+    
+    // Default validation: check if origins match
+    if (defaultUrl.origin === configuredUrl.origin) {
+      return configuredUrl;
+    }
+    
+    // If validation fails, throw the same error as the SDK would
+    throw new Error(`Protected resource ${configuredResource} does not match expected ${defaultUrl.href} (or origin)`);
+  }
+
   get redirectUrl() {
     return window.location.origin + "/oauth/callback";
   }
