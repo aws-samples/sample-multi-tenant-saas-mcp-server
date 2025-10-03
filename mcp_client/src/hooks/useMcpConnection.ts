@@ -377,7 +377,7 @@ export function useMcpConnection({
       };
 
       const transport = new StreamableHTTPClientTransport(
-        new URL(proxyUrl),
+        new URL(proxyUrl, window.location.origin),
         transportOptions
       );
 

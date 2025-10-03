@@ -9,9 +9,9 @@
  */
 export const getApiBaseUrl = (): string => {
   if (typeof window !== 'undefined') {
-    // In browser, use current origin for production
-    // This works because CloudFront routes /api/* to API Gateway
-    return window.location.origin;
+    // In development, return empty string so Vite proxy handles routing
+    // In production, use current origin for CloudFront routing
+    return process.env.NODE_ENV === 'production' ? window.location.origin : '';
   }
   
   // Fallback for SSR or other contexts
