@@ -10,8 +10,8 @@ A remote MCP server implementation for B2B travel booking with multi-tenant auth
 - AWS services: ECS, DynamoDB, S3, Cognito
 - Protected Metadata Resource handling (**RFC 9728**)
 - Multi-tenant architecture with data isolation
-- Dynamic client registration (**RFC 7591** )
-- OpenID Configuration endpoint to advertise the registration endpoint (**RFC 8414** )
+- Dynamic client registration (**RFC 7591**)
+- OpenID Configuration endpoint to advertise the registration endpoint (**RFC 8414**)
 
 ![Architecture Overview Server](/resources/mcp-server-high-level.png)
 
@@ -48,6 +48,10 @@ cd mcp_client
 ```
 
 ## Security
+
+This repository is for demonstration and reference purposes only. The code and configurations provided are not intended for production use without proper review, testing, and security considerations.
+
+## Contributing
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
 
