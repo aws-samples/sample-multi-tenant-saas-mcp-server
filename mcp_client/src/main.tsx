@@ -2,168 +2,103 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 
-// Global fetch interceptor for URL fixing
+// Get the correct API base URL for the environment
+const getApiBaseUrl = () => {
+  if (import.meta.env.DEV) {
+    return window.location.origin; // http://localhost:5173
+  }
+  return window.location.origin;
+};
+
+// Global fetch interceptor for OAuth URL fixing
 const originalFetch = window.fetch;
 window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
   
-  // Fix malformed OAuth discovery URLs
+  // Handle direct OAuth requests to localhost - redirect to MCP server
+  if ((url.includes('/.well-known/oauth-') || url.endsWith('/register')) && url.startsWith(window.location.origin) && !url.includes('/api/mcp-proxy/')) {
+    // This should not happen in normal flow - OAuth requests should come with proper context
+    // If it does happen, we can't determine which MCP server to redirect to
+    console.warn("Direct OAuth request to localhost without MCP server context:", url);
+    return Promise.reject(new Error('OAuth requests to localhost require MCP server context'));
+  }
+
+  // Fix malformed OAuth URLs
   if (url.includes('/.well-known/') && url.includes('/api/mcp-proxy/')) {
-    
-    // Extract the original server URL from the malformed URL
-    // Pattern: http://localhost:5173/.well-known/oauth-*/api/mcp-proxy/https%3A%2F%2Fserver.com%2Fmcp
     const match = url.match(/\/\.well-known\/([^\/]+)\/api\/mcp-proxy\/(.+)$/);
     if (match) {
       const wellKnownPath = match[1];
       const encodedServerUrl = match[2];
       const serverUrl = decodeURIComponent(encodedServerUrl);
-      
-      // Extract base server URL (remove /mcp path)
       const baseServerUrl = serverUrl.replace(/\/mcp$/, '');
-      
-      // Construct correct OAuth discovery URL
       const correctOAuthUrl = `${baseServerUrl}/.well-known/${wellKnownPath}`;
-      
-      console.log("  Original malformed URL:", url);
-      console.log("  Extracted server URL:", serverUrl);
-      console.log("  Base server URL:", baseServerUrl);
-      console.log("  Correct OAuth URL:", correctOAuthUrl);
-      
-      // Redirect through proxy with correct URL
-      const proxyUrl = `${window.location.origin}/api/mcp-proxy/${encodeURIComponent(correctOAuthUrl)}`;
-      console.log("  Final proxy URL:", proxyUrl);
-      
-      try {
-        const response = await originalFetch(proxyUrl, init);
-        
-        // If this is an OAuth discovery response, modify the URLs to use proxy
-        if (response.headers.get('content-type')?.includes('application/json') && 
-            wellKnownPath.includes('oauth')) {
-          
-          const responseClone = response.clone();
-          const responseText = await responseClone.text();
-          console.log("🔧 Original OAuth response:", responseText);
-          
-          try {
-            const oauthData = JSON.parse(responseText);
-            
-            // Replace any references to the original server URL with proxy URL
-            const originalServerUrl = serverUrl.replace(/\/mcp$/, '');
-            const originalFullUrl = serverUrl; // Keep the full URL with /mcp
-            const proxyFullUrl = `${window.location.origin}/api/mcp-proxy/${encodeURIComponent(originalFullUrl)}`;
-            
-            // Convert the response to string, replace URLs, then parse back
-            let modifiedResponseText = responseText;
-            
-            // Replace resource URLs with properly encoded proxy URLs
-            if (oauthData.resource) {
-              const originalResource = oauthData.resource;
-              modifiedResponseText = modifiedResponseText.replace(
-                `"resource":"${originalResource}"`,
-                `"resource":"${proxyFullUrl}"`
-              );
-              console.log("🔧 Modified resource URL:", originalResource, "→", proxyFullUrl);
-            }
-            
-            // Replace any other server URL references with encoded versions
-            modifiedResponseText = modifiedResponseText.replace(
-              new RegExp(originalFullUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
-              proxyFullUrl
-            );
-            modifiedResponseText = modifiedResponseText.replace(
-              new RegExp(originalServerUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
-              `${window.location.origin}/api/mcp-proxy/${encodeURIComponent(originalServerUrl)}`
-            );
-            
-            console.log("🔧 Modified OAuth response:", modifiedResponseText);
-            
-            // Create new response with modified data
-            return new Response(modifiedResponseText, {
-              status: response.status,
-              statusText: response.statusText,
-              headers: response.headers
-            });
-            
-          } catch (parseError) {
-            console.error("❌ Failed to parse/modify OAuth response:", parseError);
-            return response;
-          }
-        }
-        
-        return response;
-      } catch (error) {
-        console.error("❌ FIXED OAUTH REQUEST FAILED:", error);
-        throw error;
-      }
+      const apiBaseUrl = getApiBaseUrl();
+      const proxyUrl = `${apiBaseUrl}/api/mcp-proxy/${encodeURIComponent(correctOAuthUrl)}`;
+      return originalFetch(proxyUrl, init);
     }
   }
-  
-  // Check if this is a request to an external server (not localhost and not our own proxy)
+
+  // Proxy external requests
   if (url.startsWith('https://')) {
     try {
       const parsedUrl = new URL(url);
       const hostname = parsedUrl.hostname;
       
-      // Skip proxy for these hostnames
-      const skipProxyHosts = [
-        'localhost',
-        '127.0.0.1',
-        window.location.hostname
-      ];
+      const skipProxyHosts = ['localhost', '127.0.0.1', window.location.hostname];
+      const skipProxyPatterns = [/\.amazoncognito\.com$/, /cognito-idp\./, /cognito-identity\./];
       
-      const skipProxyPatterns = [
-        /\.amazoncognito\.com$/,
-        /cognito-idp\./,
-        /cognito-identity\./
-      ];
-      
-      // Don't proxy our own proxy requests
-      if (parsedUrl.pathname.includes('/api/mcp-proxy/')) {
+      if (parsedUrl.pathname.startsWith('/api/mcp-proxy/')) {
         return originalFetch(url, init);
       }
       
-      // Check if hostname should skip proxy
       const shouldSkipProxy = skipProxyHosts.includes(hostname) || 
         skipProxyPatterns.some(pattern => pattern.test(hostname));
       
       if (!shouldSkipProxy) {
-    
-    // Redirect ALL external requests through our proxy
-    const proxyUrl = `${window.location.origin}/api/mcp-proxy/${encodeURIComponent(url)}`;
-    console.log("🔄 Proxying external request:", url, "→", proxyUrl);
-    
-    try {
-      const response = await originalFetch(proxyUrl, init);
-      return response;
-    } catch (error) {
-      console.error("❌ PROXY REQUEST FAILED:", error);
-      throw error;
-    }
+        const apiBaseUrl = getApiBaseUrl();
+        const proxyUrl = `${apiBaseUrl}/api/mcp-proxy/${encodeURIComponent(url)}`;
+        
+        const response = await originalFetch(proxyUrl, init);
+        
+        // Handle OAuth protected resource responses
+        if (url.includes('oauth-protected-resource') && response.ok && response.headers.get('content-type')?.includes('application/json')) {
+          console.log("🔧 Processing OAuth protected resource response for:", url);
+          const responseText = await response.text();
+          try {
+            const data = JSON.parse(responseText);
+            console.log("🔧 Original OAuth protected resource data:", data);
+            if (data.resource) {
+              // Replace the resource URL with the proxy URL
+              const originalResource = data.resource;
+              const proxyResource = `${apiBaseUrl}/api/mcp-proxy/${encodeURIComponent(originalResource)}`;
+              data.resource = proxyResource;
+              console.log("🔧 Modified OAuth protected resource:", originalResource, "→", proxyResource);
+              
+              return new Response(JSON.stringify(data), {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers
+              });
+            }
+          } catch (e) {
+            console.warn("Failed to parse OAuth protected resource response:", e);
+          }
+          
+          return new Response(responseText, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers
+          });
+        }
+        
+        return response;
       }
     } catch (error) {
-      // If URL parsing fails, don't proxy
       console.warn("Failed to parse URL for proxy check:", url);
     }
   }
-  
-  // For localhost requests, use original fetch
-  try {
-    const response = await originalFetch(input, init);
-    
-    // Check if we got HTML when expecting JSON (potential error condition)
-    if (response.headers.get('content-type')?.includes('text/html') && 
-        (init?.method === 'POST' || url.includes('.well-known'))) {
-      console.error("❌ GOT HTML INSTEAD OF JSON!");
-      const responseClone = response.clone();
-      const responseText = await responseClone.text();
-      console.error("  Response body:", responseText.substring(0, 500));
-    }
-    
-    return response;
-  } catch (error) {
-    console.error("❌ LOCAL REQUEST FAILED:", error);
-    throw error;
-  }
+
+  return originalFetch(input, init);
 };
 
 ReactDOM.createRoot(document.getElementById("root")!).render(<App />);
