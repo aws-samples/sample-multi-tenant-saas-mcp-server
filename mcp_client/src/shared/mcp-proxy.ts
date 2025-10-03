@@ -98,30 +98,76 @@ export async function handleMcpProxy(request: McpProxyRequest): Promise<McpProxy
     console.log(`Response status: ${response.status}`);
     console.log(`Response content-type: ${response.headers.get('content-type')}`);
 
-    // Handle OAuth registration endpoint that doesn't exist on the server
-    if (request.method === 'POST' && fullUrl.includes('/register') && response.status === 404) {
+    // Handle OAuth endpoints that don't exist on the server
+    if (response.status === 404) {
       const contentType = response.headers.get('content-type') || '';
       if (contentType.includes('text/html')) {
-        console.log('Server does not support OAuth registration endpoint, providing fallback response');
+        // Handle OAuth registration endpoint
+        if (request.method === 'POST' && fullUrl.includes('/register')) {
+          console.log('Server does not support OAuth registration endpoint, providing fallback response');
+          
+          return {
+            statusCode: 400,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            },
+            body: JSON.stringify({
+              error: 'invalid_client_metadata',
+              error_description: 'Dynamic client registration is not supported by this server. Please use pre-configured client credentials or contact the server administrator for access.'
+            }),
+          };
+        }
         
-        return {
-          statusCode: 400,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          },
-          body: JSON.stringify({
-            error: 'invalid_client_metadata',
-            error_description: 'Dynamic client registration is not supported by this server. Please use pre-configured client credentials or contact the server administrator for access.'
-          }),
-        };
+        // Handle OAuth authorization server discovery endpoint
+        if (request.method === 'GET' && fullUrl.includes('/.well-known/oauth-authorization-server')) {
+          console.log('Server does not support OAuth authorization server discovery, providing fallback response');
+          
+          return {
+            statusCode: 404,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            },
+            body: JSON.stringify({
+              error: 'not_found',
+              error_description: 'OAuth authorization server discovery is not supported by this server. Please use manual authentication or contact the server administrator for access.'
+            }),
+          };
+        }
       }
     }
 
-    // Get response body
+    // Get response body first
     const responseBody = await response.text();
+
+    // Handle OAuth registration responses that might have incorrect Content-Type
+    if (request.method === 'POST' && fullUrl.includes('/register') && (response.status === 400 || response.status === 404)) {
+      // Check if it's a JSON response but with wrong Content-Type
+      try {
+        const jsonData = JSON.parse(responseBody);
+        if (jsonData.error) {
+          console.log('Fixing Content-Type for OAuth registration error response');
+          
+          return {
+            statusCode: response.status,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*',
+              'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+              'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            },
+            body: JSON.stringify(jsonData), // Ensure it's properly stringified
+          };
+        }
+      } catch (e) {
+        // Not JSON, continue with normal processing
+      }
+    }
 
     // Build response headers
     const responseHeaders: Record<string, string> = {
