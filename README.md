@@ -47,7 +47,7 @@ cd mcp_client
 ./deploy.sh
 ```
 
-## Security
+## Disclaimer
 
 This repository is for demonstration and reference purposes only. The code and configurations provided are not intended for production use without proper review, testing, and security considerations.
 
