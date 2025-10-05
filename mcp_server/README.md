@@ -35,7 +35,7 @@ This diagram illustrates how the Model Context Protocol (MCP) Server handles sec
 
 **Step 2: OAuth with Dynamic Client Registration (DCR) proxy**
 - Client gets Authorization Server Metadata (2a) from authorization_server`/.well-known/openid-configuration` (or `/.well-known/oauth-authorization-server`). Since Cognito's default `/.well-known/openid_configuration` can't be customized we provide our own via the proxy. This is needed for DCR in step 2b. If you want to skip DCR you can manually create a Cognito App Client and provide the client_id and client_secret initially.
-- Clients **optionally** can use Dynamic Client Registration (DCR) (2b) to automatically register their client with the OAuth provider. This requires a **custom OpenID configuration** (2a) that includes the DCR endpoint in the `registration_endpoint` field. The public clients will get created as Cognito application clients and are tracked in a separate DynamoDB table (See [Dynamic Client Registration](#OAuth-and-Dynamic-Client-Registration-(DCR))).
+- Clients **optionally** can use Dynamic Client Registration (DCR) (2b) to automatically register their client with the OAuth provider. This requires a **custom OpenID configuration** (2a) that includes the DCR endpoint in the `registration_endpoint` field. The public clients will get created as Cognito application clients and are tracked in a separate DynamoDB table (See [Dynamic Client Registration](#oauth-and-dynamic-client-registration-dcr)).
 
 **Step 3: Multi-Tenant Cognito Customization**
 - After the client obtains client_id it can now start the Authorization Code Grant to get the access token. This will involve redirection to the Amazon Cognito Hosted UI and callbacks.
