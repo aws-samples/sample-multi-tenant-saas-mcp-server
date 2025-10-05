@@ -7,10 +7,10 @@ A Model Context Protocol (MCP) server implementation for B2B travel booking with
 **Technology Stack:**
 - Node.js with Express and MCP SDK
 - AWS services: ECS, DynamoDB, S3, Cognito
+- Multi-tenant architecture with data isolation
 - **RFC 9728** Protected Metadata Resource 
 - **RFC 7591** Dynamic client registration
 - **RFC 8414** OpenID Configuration endpoint to advertise the endpoint
-- Multi-tenant architecture with data isolation
 
 **Key Features:**
 - Travel booking tools (flights, hotels, loyalty programs)
@@ -35,7 +35,7 @@ This diagram illustrates how the Model Context Protocol (MCP) Server handles sec
 
 **Step 2: OAuth with Dynamic Client Registration (DCR) proxy**
 - Client gets Authorization Server Metadata (2a) from authorization_server`/.well-known/openid-configuration` (or `/.well-known/oauth-authorization-server`). Since Cognito's default `/.well-known/openid_configuration` can't be customized we provide our own via the proxy. This is needed for DCR in step 2b. If you want to skip DCR you can manually create a Cognito App Client and provide the client_id and client_secret initially.
-- Clients **optionally** can use Dynamic Client Registration (DCR) (2b) to automatically register their client with the OAuth provider. This requires a **custom OpenID configuration** (2a) that includes the DCR endpoint in the `registration_endpoint` field. The public clients will get created as Cognito application clients and are tracked in a separate DynamoDB table (See [DCR Security considerations](#dynamic-client-registration-dcr-security)).
+- Clients **optionally** can use Dynamic Client Registration (DCR) (2b) to automatically register their client with the OAuth provider. This requires a **custom OpenID configuration** (2a) that includes the DCR endpoint in the `registration_endpoint` field. The public clients will get created as Cognito application clients and are tracked in a separate DynamoDB table (See [Dynamic Client Registration](#OAuth-and-Dynamic-Client-Registration-(DCR))).
 
 **Step 3: Multi-Tenant Cognito Customization**
 - After the client obtains client_id it can now start the Authorization Code Grant to get the access token. This will involve redirection to the Amazon Cognito Hosted UI and callbacks.
@@ -58,13 +58,27 @@ The system uses a two-stack CDK deployment:
 - **Infrastructure Stack**: DynamoDB, S3, Cognito, IAM roles
 - **Application Stack**: ECS Fargate, ALB, VPC, networking
 
-### OAuth and Dynamic Client Registration
+### OAuth and Dynamic Client Registration (DCR)
 
-The server project includes a custom implementation of [Dynamic Client Registration (DCR)](https://tools.ietf.org/html/rfc7591) for Amazon Cognito that provides:
+The sample includes a custom implementation of [Dynamic Client Registration (DCR)](https://tools.ietf.org/html/rfc7591) for Amazon Cognito. It also provides a separate **RFC 8414** OpenID Configuration endpoint to advertise the **registration_endpoint**. 
 
-- **RFC 7591** dynamic client registration
-- **RFC 8414** OpenID Configuration endpoint to advertise the endpoint
-- **Seamless integration** with the MCP Server's Cognito User Pool
+The DCR endpoint is implemented via a custom AWS Lambda function. It creates app clients via the Amazon Cognito API and keeps track of the clients in a DynamoDB table. During creation the function first checks if the (to be registered) app client already exists based on the **client_name** and **redirect_uri**. This prevents the creation of new app clients for every registration request and provides a single client_id per application client (Claude Desktop, MCP Playground, Inspector etc.).
+
+**Features:**
+- **Public Clients Only**: Only stores and retrieves public clients (no client secrets)
+- **Base64url Encoding**: URI encoding prevents DynamoDB key character issues
+- **Cached clients**: Sub-10ms response from DynamoDB vs 100-500ms Cognito pagination
+
+**Table Schema:**
+```json
+{
+  "clientKey": "MyApp#aHR0cHM6Ly9hcHAuY29tL2NiLGh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9jYg",
+  "clientId": "1a2b3c4d5e6f7g8h9i0j",
+  "createdAt": "2024-01-15T10:30:00.000Z"
+}
+```
+
+Please note that if you register a public client with a localhost redirect_uri that is already registered, the client_id already registered for this redirect_uri will be returned. As defined in [RFC9700](https://datatracker.ietf.org/doc/rfc9700/), we recommend that you enforce PKCE in those use cases at least. In addition, the current specification requires the DCR endpoint to be public. We therefore apply a conservative rate-limit on the DCR endpoint.  
 
 ### Current Limitations and Workarounds
 
@@ -130,28 +144,6 @@ If no alias is provided, the system generates a unique tenant ID:
 - Use secure tenant assignment through admin interfaces
 - Validate tenant membership through external identity providers
 - Implement tenant-specific user pools or proper RBAC systems
-
-### Dynamic Client Registration (DCR) Security
-
-The DCR implementation uses a DynamoDB table (`MCPServerPublicClients`) to securely track public OAuth clients, preventing exposure of confidential client information.
-
-**Security Features:**
-- **Public Clients Only**: Only stores and retrieves public clients (no client secrets)
-- **Base64url Encoding**: URI encoding prevents DynamoDB key character issues
-- **Fast Lookups**: Sub-10ms response vs 100-500ms Cognito pagination
-- **Minimal Storage**: Only stores lookup keys and client IDs
-
-**Table Schema:**
-```json
-{
-  "clientKey": "MyApp#aHR0cHM6Ly9hcHAuY29tL2NiLGh0dHA6Ly9sb2NhbGhvc3Q6MzAwMC9jYg",
-  "clientId": "1a2b3c4d5e6f7g8h9i0j",
-  "createdAt": "2024-01-15T10:30:00.000Z"
-}
-```
-
-Please note that if you register a public client with a localhost redirect_uri that is already registered, the client_id already registered for this redirect_uri will be returned.
-As defined in [RFC9700](https://datatracker.ietf.org/doc/rfc9700/), we recommend that you enforce PKCE in those use cases at least.
 
 ## Directory Structure
 
