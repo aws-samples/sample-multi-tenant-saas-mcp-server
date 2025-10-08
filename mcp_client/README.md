@@ -367,4 +367,4 @@ For detailed authentication setup and troubleshooting, see [Authentication Guide
 
 ---
 
-**Ready to explore AI capabilities?** Start with `npm start` for local development or `./deploy.sh` for AWS deployment!
+This client implementation draws inspiration from another example [reachable here.](https://github.com/cloudflare/ai/tree/main/playground/ai)
