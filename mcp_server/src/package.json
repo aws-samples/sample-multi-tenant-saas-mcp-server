@@ -10,7 +10,7 @@
     "@aws-sdk/client-sts": "^3.806.0",
     "@aws-sdk/lib-dynamodb": "^3.806.0",
     "@faker-js/faker": "^9.7.0",
-    "@modelcontextprotocol/sdk": "^1.11.0",
+    "@modelcontextprotocol/sdk": "^1.24.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^5.1.0",
