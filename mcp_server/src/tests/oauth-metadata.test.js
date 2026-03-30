@@ -3,7 +3,7 @@
  * Verifies OAuth metadata validation, generation, and request handling functionality
  */
 
-import { jest } from '@jest/globals';
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { validateConfiguration, generateMetadata, handleMetadataRequest } from '../auth/oauth-metadata.js';
 
 describe('oauth-metadata', () => {
@@ -186,14 +186,14 @@ describe('oauth-metadata', () => {
         method: 'GET',
         url: '/.well-known/oauth-protected-resource',
         ip: '127.0.0.1',
-        get: jest.fn((header) => {
+        get: vi.fn((header) => {
           if (header === 'User-Agent') return 'Test-Agent/1.0';
           return undefined;
         })
       };
       mockRes = {
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn().mockReturnThis(),
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn().mockReturnThis(),
       };
     });
 
@@ -226,7 +226,7 @@ describe('oauth-metadata', () => {
       process.env.RESOURCE_SERVER_URL = 'https://api.example.com';
       process.env.COGNITO_USER_POOL_ID = 'us-east-1_TEST123456';
       process.env.AWS_REGION = 'us-east-1';
-      mockReq.get = jest.fn(() => undefined);
+      mockReq.get = vi.fn(() => undefined);
 
       handleMetadataRequest(mockReq, mockRes);
 

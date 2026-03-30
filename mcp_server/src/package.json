@@ -23,13 +23,11 @@
     "build": "tsc && cp *.js *.json dist/ && cp -r prompts mcp auth dist/",
     "start": "npx tsx --env-file=.env --watch index.js",
     "start:prod": "node dist/index.js",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest",
-    "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
-    "@swc/core": "^1.15.21",
-    "@swc/jest": "^0.2.39",
     "@types/node": "^22.15.17",
-    "jest": "^29.7.0"
+    "vitest": "^4.1.2"
   }
 }
