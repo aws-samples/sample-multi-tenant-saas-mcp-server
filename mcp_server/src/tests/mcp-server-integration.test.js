@@ -204,8 +204,8 @@ describe('MCP Server Integration', () => {
   // --- Error handling ---
 
   test('calling unknown tool returns error', async () => {
-    await expect(client.callTool({ name: 'nonexistent', arguments: {} }))
-      .rejects.toThrow();
+    const result = await client.callTool({ name: 'nonexistent', arguments: {} });
+    expect(result.isError).toBe(true);
   });
 
   // --- Stateless model ---
