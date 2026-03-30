@@ -4,7 +4,8 @@
  * Only tests unique to RFC compliance that aren't covered by oauth-metadata.test.js.
  */
 
-import { jest } from '@jest/globals';
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
+import { handleMetadataRequest } from '../auth/oauth-metadata.js';
 
 describe('RFC 9728 Compliance Validation', () => {
   let originalEnv;
@@ -25,17 +26,16 @@ describe('RFC 9728 Compliance Validation', () => {
       method: 'GET',
       url: '/.well-known/oauth-protected-resource',
       ip: '127.0.0.1',
-      get: jest.fn(() => 'RFC9728-Test/1.0')
+      get: vi.fn(() => 'RFC9728-Test/1.0')
     };
     const mockRes = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis()
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis()
     };
     return { mockReq, mockRes };
   }
 
-  test('should use valid URI for resource field', async () => {
-    const { handleMetadataRequest } = await import('../auth/oauth-metadata.js');
+  test('should use valid URI for resource field', () => {
     const { mockReq, mockRes } = callMetadataEndpoint();
 
     handleMetadataRequest(mockReq, mockRes);
@@ -45,8 +45,7 @@ describe('RFC 9728 Compliance Validation', () => {
     expect(metadata.resource).toMatch(/^https?:\/\//);
   });
 
-  test('should use valid HTTPS URIs for authorization_servers', async () => {
-    const { handleMetadataRequest } = await import('../auth/oauth-metadata.js');
+  test('should use valid HTTPS URIs for authorization_servers', () => {
     const { mockReq, mockRes } = callMetadataEndpoint();
 
     handleMetadataRequest(mockReq, mockRes);
@@ -59,8 +58,7 @@ describe('RFC 9728 Compliance Validation', () => {
     });
   });
 
-  test('should not expose sensitive configuration in metadata', async () => {
-    const { handleMetadataRequest } = await import('../auth/oauth-metadata.js');
+  test('should not expose sensitive configuration in metadata', () => {
     const { mockReq, mockRes } = callMetadataEndpoint();
 
     handleMetadataRequest(mockReq, mockRes);

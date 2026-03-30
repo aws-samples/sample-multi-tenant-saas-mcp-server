@@ -3,28 +3,32 @@
  * Uses InMemoryTransport to test the full MCP protocol flow with mocked AWS services.
  */
 
-import { jest } from '@jest/globals';
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock AWS services at the service boundary (before any tool imports)
-const mockDynamoSend = jest.fn().mockResolvedValue({ Items: [] });
-jest.unstable_mockModule('../services/dynamoDb.js', () => ({
-  TABLE_NAME: 'test-table',
-  getDynamoDbClient: jest.fn().mockResolvedValue({ send: mockDynamoSend }),
+// Hoisted so vi.mock factories can reference them
+const { mockDynamoSend, mockS3Send } = vi.hoisted(() => ({
+  mockDynamoSend: vi.fn().mockResolvedValue({ Items: [] }),
+  mockS3Send: vi.fn().mockResolvedValue({ Body: null }),
 }));
 
-const mockS3Send = jest.fn().mockResolvedValue({ Body: null });
-jest.unstable_mockModule('../services/s3.js', () => ({
+// Mock AWS services at the service boundary
+vi.mock('../services/dynamoDb.js', () => ({
+  TABLE_NAME: 'test-table',
+  getDynamoDbClient: vi.fn().mockResolvedValue({ send: mockDynamoSend }),
+}));
+
+vi.mock('../services/s3.js', () => ({
   BUCKET_NAME: 'test-bucket',
-  getS3Client: jest.fn().mockResolvedValue({ send: mockS3Send }),
-  listTenantResources: jest.fn().mockResolvedValue([
+  getS3Client: vi.fn().mockResolvedValue({ send: mockS3Send }),
+  listTenantResources: vi.fn().mockResolvedValue([
     { key: 'tenant-abc/guide.md', filename: 'guide.md', contentType: 'text/markdown' },
   ]),
 }));
 
 // Mock JWT verifier so whoami doesn't call Cognito
-jest.unstable_mockModule('../auth/jwt-verifier.js', () => ({
-  processJwt: jest.fn(),
-  verifyToken: jest.fn().mockResolvedValue({
+vi.mock('../auth/jwt-verifier.js', () => ({
+  processJwt: vi.fn(),
+  verifyToken: vi.fn().mockResolvedValue({
     sub: 'user-123',
     email: 'test@example.com',
     'custom:tenantId': 'tenant-abc',
@@ -37,10 +41,9 @@ jest.unstable_mockModule('../auth/jwt-verifier.js', () => ({
   }),
 }));
 
-// Dynamic imports after mocks are set up
-const { InMemoryTransport } = await import('@modelcontextprotocol/sdk/inMemory.js');
-const { Client } = await import('@modelcontextprotocol/sdk/client/index.js');
-const mcpServer = await import('../mcp/mcp-server.js');
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import mcpServer from '../mcp/mcp-server.js';
 
 const AUTH_INFO = {
   token: 'test-token',
@@ -58,7 +61,7 @@ const AUTH_INFO = {
  * Helper: create a linked client+server pair with authInfo injected on every message.
  */
 async function createTestPair() {
-  const server = mcpServer.default.create();
+  const server = mcpServer.create();
   const [serverTransport, clientTransport] = InMemoryTransport.createLinkedPair();
 
   // Inject authInfo on every client→server message
@@ -142,7 +145,6 @@ describe('MCP Server Integration', () => {
       name: 'book_flight',
       arguments: { flightNumber: 'AA1234', departure: '2026-06-15', flightClass: 'Economy' },
     });
-    // Result is either a success or a simulated error scenario — both are valid
     expect(result.content[0].type).toBe('text');
     expect(result.content[0].text.length).toBeGreaterThan(0);
   });
@@ -168,7 +170,6 @@ describe('MCP Server Integration', () => {
 
   test('tenant ID from authInfo is used for DynamoDB queries', async () => {
     await client.callTool({ name: 'list_bookings', arguments: {} });
-    // Verify the mocked DynamoDB client's send was called (proves auth→service flow works)
     expect(mockDynamoSend).toHaveBeenCalled();
   });
 
@@ -203,16 +204,8 @@ describe('MCP Server Integration', () => {
   // --- Error handling ---
 
   test('calling unknown tool returns error', async () => {
-    let errorDetected = false;
-    try {
-      const result = await client.callTool({ name: 'nonexistent', arguments: {} });
-      console.log('[DEBUG] callTool resolved:', JSON.stringify(result));
-      errorDetected = result.isError === true;
-    } catch (e) {
-      console.log('[DEBUG] callTool threw:', e.constructor.name, e.message, e.code);
-      errorDetected = e.message.includes('nonexistent');
-    }
-    expect(errorDetected).toBe(true);
+    await expect(client.callTool({ name: 'nonexistent', arguments: {} }))
+      .rejects.toThrow();
   });
 
   // --- Stateless model ---
