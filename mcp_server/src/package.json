@@ -27,6 +27,8 @@
     "test:watch": "node --experimental-vm-modules node_modules/.bin/jest --watch"
   },
   "devDependencies": {
+    "@swc/core": "^1.15.21",
+    "@swc/jest": "^0.2.39",
     "@types/node": "^22.15.17",
     "jest": "^29.7.0"
   }

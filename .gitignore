@@ -116,6 +116,11 @@ dist
 # FuseBox cache
 .fusebox/
 
+# KIRO and SOPs
+.kiro/
+.sop/
+
+
 # DynamoDB Local files
 .dynamodb/
 
