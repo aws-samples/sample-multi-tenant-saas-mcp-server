@@ -79,10 +79,8 @@ async function main() {
   }));
 
   const alias = email.includes('+') ? email.split('+')[1].split('@')[0] : 'DEFAULT';
-  console.log(`✅ User created: ${username}`);
-  console.log(`   tenantId: ${alias}`);
-  console.log(`\nRun e2e tests with:`);
-  console.log(`   TEST_USERNAME='${username}' TEST_PASSWORD='${password}' MCP_SERVER_URL=<URL> npm run test:e2e`);
+  console.log(`✅ User created: ${username} (tenantId: ${alias})`);
+  console.log(`\nRun e2e tests with:\n   MCP_SERVER_URL=<URL> TEST_USERNAME='${username}' TEST_PASSWORD='<your-password>' npm run test:e2e`);
 }
 
 main().catch((e) => { console.error('❌', e.message); process.exit(1); });
