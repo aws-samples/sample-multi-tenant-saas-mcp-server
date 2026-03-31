@@ -102,24 +102,17 @@ if ! load_config; then
     prompt_config
 fi
 
-# Check if the ECR repository exists if deploying application stack
+# Build and push container image if deploying application stack
 if [ "$DEPLOY_APPLICATION" = "true" ]; then
-    echo "Checking if ECR repository '$ECR_REPOSITORY_NAME' exists..."
-    if ! aws ecr describe-repositories --repository-names "$ECR_REPOSITORY_NAME" --region "$AWS_REGION" &> /dev/null; then
-        echo "ECR repository '$ECR_REPOSITORY_NAME' does not exist. Building and pushing image..."
-        
-        SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-        if [ -f "$SCRIPT_DIR/../src/scripts/pushDockerImage.sh" ]; then
-            echo "Running pushDockerImage.sh script..."
-            cd "$SCRIPT_DIR/../src"
-            ./scripts/pushDockerImage.sh
-            cd "$SCRIPT_DIR"
-        else
-            echo "ERROR: pushDockerImage.sh script not found at $SCRIPT_DIR/../src/scripts/pushDockerImage.sh"
-            exit 1
-        fi
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+    if [ -f "$SCRIPT_DIR/../src/scripts/pushDockerImage.sh" ]; then
+        echo "Building and pushing container image..."
+        cd "$SCRIPT_DIR/../src"
+        ./scripts/pushDockerImage.sh
+        cd "$SCRIPT_DIR"
     else
-        echo "ECR repository '$ECR_REPOSITORY_NAME' exists. Proceeding with deployment."
+        echo "ERROR: pushDockerImage.sh script not found"
+        exit 1
     fi
 fi
 
