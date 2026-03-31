@@ -100,9 +100,15 @@ src/
 
 ### Building Locally
 
+The Dockerfile copies a pre-built `dist/` directory rather than building inside the container. This avoids slow x86 emulation when building `linux/amd64` images on ARM Macs, since ECS Express Mode uses x86 by default.
+
 ```bash
-# Build Docker image
-./scripts/buildDockerImage.sh
+# Build the app first — Dockerfile expects pre-built dist/
+npm run build
+
+# Build and push container image (use finch if docker is not installed)
+finch build --platform linux/amd64 -t <ECR_URI>:latest .
+finch push <ECR_URI>:latest
 ```
 
 
@@ -133,7 +139,14 @@ TEST_PASSWORD='YourPassword!' \
 npm run test:e2e
 ```
 
-The test user must have been signed up through the Cognito hosted UI (so the PostConfirmation Lambda assigns a `tenantId`). See the [User Signup and Tenant Assignment](../README.md#user-signup-and-tenant-assignment) section for details.
+The test user needs a `tenantId` assigned (normally done by the PostConfirmation Lambda during hosted UI signup). For testing, use the helper script which creates the user and triggers the Lambda:
+
+```bash
+node scripts/create-test-user.js <email> <password>
+# Example: node scripts/create-test-user.js testuser+acme@example.com 'MyPassword1!'
+```
+
+Use an email like `yourname+tenantname@example.com` — the alias (`tenantname`) becomes the tenant ID.
 
 ## Environment Variables
 

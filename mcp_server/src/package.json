@@ -28,7 +28,9 @@
     "test:e2e": "vitest run --config vitest.e2e.config.ts"
   },
   "devDependencies": {
+    "@aws-sdk/client-cloudformation": "^3.1020.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.1020.0",
+    "@aws-sdk/client-lambda": "^3.1020.0",
     "@types/node": "^22.15.17",
     "vitest": "^4.1.2"
   }

@@ -63,8 +63,9 @@ export class InfrastructureStack extends cdk.Stack {
 
     // Create the S3 bucket
     this.mcpServerPolicyBucket = new s3.Bucket(this, "MCPServerTravelPolicyBucket", {
-      removalPolicy: cdk.RemovalPolicy.DESTROY, // Bucket will be deleted when stack is destroyed
-      enforceSSL: true, // Require SSL/HTTPS for all requests
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      enforceSSL: true,
     });
 
     // Create Lambda function for post-confirmation tenant assignment
