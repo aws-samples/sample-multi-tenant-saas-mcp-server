@@ -21,3 +21,18 @@ jobs:
           cache-dependency-path: mcp_server/src/package-lock.json
       - run: npm ci
       - run: npm test
+
+  cdk-synth:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcp_server/infra
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: mcp_server/infra/package-lock.json
+      - run: npm ci
+      - run: npx cdk synth --quiet
