@@ -25,7 +25,7 @@ npm run test:e2e       # e2e against live deployment (needs env vars below)
 # Server — deploy
 cd mcp_server/infra
 npm install
-npx cdk deploy --all   # or ./deploy.sh
+./deploy.sh
 
 # Server — container image
 cd mcp_server/src
@@ -109,4 +109,4 @@ Tools registered in `mcp_server/src/mcp/mcp-server.js`. Booking tools use Faker 
 
 - If `docker` is not installed, use `finch` as a drop-in replacement for container builds
 - `Dockerfile` expects pre-built `dist/` (run `npm run build` first)
-- ECS Express Gateway service updates require a new image push + `cdk deploy` or `aws ecs update-service --force-new-deployment`
+- ECS Express Gateway service updates require a new image push + `./deploy.sh` or `aws ecs update-service --force-new-deployment`
