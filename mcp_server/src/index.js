@@ -1,6 +1,7 @@
 import log4js from "./utils/logging.js";
 import express from "express";
 import cors from "cors";
+import rateLimit from "express-rate-limit";
 import config from './utils/env-config.js';
 import { metadata } from "./utils/metadata.js";
 import {postRequestHandler, sessionRequestHandler} from "./mcp/transport.js";
@@ -42,7 +43,8 @@ app.use((req, res, next) => {
 app.get(/^\/\.well-known\/oauth-protected-resource.*/, handleMetadataRequest);
 
 // MCP endpoints with OAuth token validation
-app.post("/mcp", tokenMiddleware, postRequestHandler);
+const mcpLimiter = rateLimit({ windowMs: 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false });
+app.post("/mcp", mcpLimiter, tokenMiddleware, postRequestHandler);
 app.get("/mcp", sessionRequestHandler);
 app.delete("/mcp", sessionRequestHandler);
 
