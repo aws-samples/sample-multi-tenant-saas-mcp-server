@@ -1,19 +1,13 @@
 import { processJwt } from "./jwt-verifier.js";
-import config from '../utils/env-config.js';
 import { requireBearerAuth } from '@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js';
 
-export const tokenMiddleware = requireBearerAuth({
-  requiredScopes: ["openid"],
-  resourceMetadataUrl: `${config.get('RESOURCE_SERVER_URL')}/.well-known/oauth-protected-resource`, 
-  verifier: {
-    verifyAccessToken: async (token) => {
-      return processJwt(token)
-        .then(result => {
-          return result;
-        })
-        .catch(error => {
-          throw error;
-        });
+export const tokenMiddleware = (req, res, next) => {
+  const resourceMetadataUrl = `${req.get('X-Forwarded-Proto') || req.protocol}://${req.get('Host')}/.well-known/oauth-protected-resource`;
+  return requireBearerAuth({
+    requiredScopes: ["openid"],
+    resourceMetadataUrl,
+    verifier: {
+      verifyAccessToken: async (token) => processJwt(token),
     }
-  }
-})
+  })(req, res, next);
+};

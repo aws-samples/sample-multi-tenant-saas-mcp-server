@@ -24,9 +24,11 @@
     "start": "npx tsx --env-file=.env --watch index.js",
     "start:prod": "node dist/index.js",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "vitest run --config vitest.e2e.config.ts"
   },
   "devDependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.1020.0",
     "@types/node": "^22.15.17",
     "vitest": "^4.1.2"
   }

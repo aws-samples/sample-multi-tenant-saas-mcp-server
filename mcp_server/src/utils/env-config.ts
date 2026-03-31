@@ -34,7 +34,6 @@ function loadEnv() {
     'PORT',
     'NODE_ENV',
     'ECS_CONTAINER_METADATA_URI_V4',
-    'RESOURCE_SERVER_URL',
     'AUTHORIZATION_SERVER_WITH_DCR_URL',
     'DCR_ENABLED',
   ];
@@ -59,4 +58,5 @@ function loadEnv() {
 }
 
 const config = loadEnv();
+
 export default config;

@@ -12,7 +12,6 @@ describe('RFC 9728 Compliance Validation', () => {
 
   beforeEach(() => {
     originalEnv = { ...process.env };
-    process.env.RESOURCE_SERVER_URL = 'https://api.example.com';
     process.env.COGNITO_USER_POOL_ID = 'us-east-1_TEST123456';
     process.env.AWS_REGION = 'us-east-1';
   });
@@ -25,8 +24,14 @@ describe('RFC 9728 Compliance Validation', () => {
     const mockReq = {
       method: 'GET',
       url: '/.well-known/oauth-protected-resource',
+      protocol: 'https',
       ip: '127.0.0.1',
-      get: vi.fn(() => 'RFC9728-Test/1.0')
+      get: vi.fn((header) => {
+        if (header === 'Host') return 'api.example.com';
+        if (header === 'X-Forwarded-Proto') return 'https';
+        if (header === 'User-Agent') return 'RFC9728-Test/1.0';
+        return undefined;
+      })
     };
     const mockRes = {
       status: vi.fn().mockReturnThis(),
