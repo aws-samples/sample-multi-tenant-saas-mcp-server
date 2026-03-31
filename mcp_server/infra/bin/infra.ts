@@ -110,30 +110,14 @@ NagSuppressions.addStackSuppressions(mcpServerInfrastructureStack, [
 
 NagSuppressions.addStackSuppressions(mcpServerApplicationStack, [
   {
-    id: 'AwsSolutions-ELB2',
-    reason: 'Demo repository - Load balancer access logs not required for demonstration purposes'
-  },
-  {
-    id: 'AwsSolutions-VPC7',
-    reason: 'Demo repository - VPC Flow Logs not required for demonstration purposes'
-  },
-  {
-    id: 'AwsSolutions-ECS4',
-    reason: 'Demo repository - CloudWatch Container Insights not required for demonstration purposes'
+    id: 'AwsSolutions-IAM4',
+    reason: 'AWS managed policies required for ECS Express Mode execution and infrastructure roles'
   },
   {
     id: 'AwsSolutions-IAM5',
-    reason: 'ECS Task Execution Role requires wildcard permissions for AWS service operations: ECR authorization tokens and CloudWatch log group creation',
+    reason: 'ECS Express Mode infrastructure role requires wildcard permissions for managing ALB, security groups, and auto-scaling',
     appliesTo: ['Resource::*']
   },
-  {
-    id: 'AwsSolutions-EC23',
-    reason: 'Public MCP server API requires internet access - ALB security group must allow 0.0.0.0/0 inbound traffic for public accessibility'
-  },
-  {
-    id: 'AwsSolutions-ECS2',
-    reason: 'Environment variables contain only non-confidential configuration data (resource names, public identifiers, URLs) - no secrets requiring AWS Secrets Manager'
-  }
 ]);
 
 // Export stack references for cross-stack integration

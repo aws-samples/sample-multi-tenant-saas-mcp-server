@@ -35,7 +35,7 @@ export default defineConfig({
 	},
 	optimizeDeps: {
 		exclude: ['@modelcontextprotocol/sdk'],
-		include: ['ajv'],
+		include: ['ajv', 'ajv-formats'],
 	},
 	ssr: {
 		noExternal: ['@modelcontextprotocol/sdk'],

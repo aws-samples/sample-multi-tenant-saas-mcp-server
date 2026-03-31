@@ -33,8 +33,13 @@ export const handleMetadataRequest = (req, res) => {
   });
   
   try {
+    // Derive resource server URL from the incoming request
+    const protocol = req.get('X-Forwarded-Proto') || req.protocol;
+    const host = req.get('Host');
+    const resourceServerUrl = `${protocol}://${host}`;
+
     // Validate configuration first
-    const validation = validateConfiguration();
+    const validation = validateConfiguration(resourceServerUrl);
     
     if (!validation.isValid) {
       l.error('OAuth metadata configuration validation failed', {
@@ -50,7 +55,7 @@ export const handleMetadataRequest = (req, res) => {
     }
     
     // Generate metadata
-    const metadata = generateMetadata();
+    const metadata = generateMetadata(resourceServerUrl);
     
     // Return 200 OK with metadata JSON
     res.status(200).json(metadata);
@@ -73,8 +78,7 @@ export const handleMetadataRequest = (req, res) => {
  * OAuth 2.1 Protected Metadata Resource implementation
  * Provides RFC 9728 metadata validation and generation
  */
-export const generateMetadata = () => {
-  const resourceServerUrl = config.get('RESOURCE_SERVER_URL');
+export const generateMetadata = (resourceServerUrl) => {
   const userPoolId = config.get('COGNITO_USER_POOL_ID');
   const region = config.get('AWS_REGION');
   const dcrEnabled = config.get('DCR_ENABLED', 'false').toLowerCase() === 'true';
@@ -118,13 +122,12 @@ export const generateMetadata = () => {
 
 
 
-export const validateConfiguration = () => {
+export const validateConfiguration = (resourceServerUrl) => {
   const errors = [];
   
   // Check for required environment variables
-  const resourceServerUrl = config.get('RESOURCE_SERVER_URL');
   if (isEmpty(resourceServerUrl)) {
-    errors.push('Missing required environment variable: RESOURCE_SERVER_URL');
+    errors.push('Could not determine resource server URL from request');
   }
   
   const cognitoUserPoolId = config.get('COGNITO_USER_POOL_ID');

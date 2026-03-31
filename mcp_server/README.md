@@ -101,9 +101,9 @@ cd infra
 npm install
 ./deploy.sh
 
-# Run full OAuth Flow (Optional) or start Inspector / connect to Claude
-export MCP_SERVER_URL=<YOUR_SERVER>
-node oauth_flow_unified.js
+# Run end-to-end test (optional)
+cd ../src
+MCP_SERVER_URL=<YOUR_SERVER> TEST_USERNAME='user+tenant@example.com' TEST_PASSWORD='password' npm run test:e2e
 ```
 
 ## Multi-Tenant Security

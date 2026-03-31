@@ -27,13 +27,14 @@ src/
 │   ├── prompts.js        # Prompt handling
 │   └── templates.json    # Prompt templates
 ├── tests/                # Test files
-│   ├── oauth-integration.test.js
+│   ├── e2e.test.ts       # End-to-end test (full OAuth + MCP tools)
+│   ├── mcp-server-integration.test.js
+│   ├── oauth-metadata.test.js
 │   ├── rfc9728-compliance.test.js
 │   └── ...
 └── scripts/              # Build and deployment scripts
     ├── buildDockerImage.sh
-    ├── pushDockerImage.sh
-    └── oauth_flow_unified.cjs
+    └── pushDockerImage.sh
 ```
 
 ## Available Tools
@@ -82,7 +83,6 @@ src/
    ROLE_ARN=$(aws cloudformation describe-stacks --stack-name MCPServerInfrastructureStack --query "Stacks[0].Outputs[?OutputKey=='MCPServerDataAccessRoleArn'].OutputValue" --output text)
    COGNITO_USER_POOL_ID=$(aws cloudformation describe-stacks --stack-name MCPServerInfrastructureStack --query "Stacks[0].Outputs[?OutputKey=='MCPServerUserPoolId'].OutputValue" --output text)
    AWS_REGION=us-east-1
-   RESOURCE_SERVER_URL=http://localhost:3000
    
    # Optional: OAuth proxy mode
    # DCR_ENABLED=true
@@ -106,24 +106,34 @@ src/
 ```
 
 
-## OAuth Flow Testing
+## Testing
 
-### Complete OAuth 2.1 Flow Test
+### Unit & Integration Tests
 
 ```bash
-# Set MCP server URL
-export MCP_SERVER_URL=https://your-mcp-server.com
-
-# Run unified OAuth flow test
-./scripts/oauth_flow_unified.cjs
+npm test
 ```
 
-This script tests:
-- Protected Resource Discovery (RFC 9728)
-- Authorization Server Configuration Discovery
-- Dynamic Client Registration (if enabled)
-- Authorization Code Flow with browser interaction
-- Token Exchange and MCP Server Integration
+### End-to-End Test
+
+Runs the full MCP OAuth 2.1 flow against a live deployment:
+
+1. `POST /mcp` → 401 with `WWW-Authenticate` header (RFC 9728)
+2. Discovers protected resource metadata and authorization server
+3. Fetches OpenID configuration
+4. Registers a client via Dynamic Client Registration (RFC 7591)
+5. Completes Authorization Code flow with PKCE (automated Cognito hosted UI login)
+6. Exchanges code for tokens at the token endpoint
+7. Connects the MCP SDK client and exercises all tools, prompts, and resources
+
+```bash
+MCP_SERVER_URL=https://your-mcp-server.com \
+TEST_USERNAME='user+tenant@example.com' \
+TEST_PASSWORD='YourPassword!' \
+npm run test:e2e
+```
+
+The test user must have been signed up through the Cognito hosted UI (so the PostConfirmation Lambda assigns a `tenantId`). See the [User Signup and Tenant Assignment](../README.md#user-signup-and-tenant-assignment) section for details.
 
 ## Environment Variables
 
@@ -136,7 +146,6 @@ This script tests:
 | `ROLE_ARN` | IAM role for AWS access | `arn:aws:iam::123456789012:role/MCPServerRole` |
 | `COGNITO_USER_POOL_ID` | Cognito User Pool ID | `us-east-1_ABCDEF123` |
 | `AWS_REGION` | AWS region | `us-east-1` |
-| `RESOURCE_SERVER_URL` | OAuth resource server URL | `https://api.example.com` |
 
 ### Optional Variables
 

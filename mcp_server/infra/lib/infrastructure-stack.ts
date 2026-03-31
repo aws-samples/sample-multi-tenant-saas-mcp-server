@@ -69,7 +69,7 @@ export class InfrastructureStack extends cdk.Stack {
 
     // Create Lambda function for post-confirmation tenant assignment
     this.postConfirmationLambda = new lambda.Function(this, "PostConfirmationLambda", {
-      runtime: lambda.Runtime.NODEJS_22_X,
+      runtime: lambda.Runtime.NODEJS_24_X,
       handler: "post-confirmation-handler.handler",
       code: lambda.Code.fromAsset(path.join(__dirname, "../lambda/post-confirmation")),
       timeout: cdk.Duration.seconds(30),
@@ -84,7 +84,7 @@ export class InfrastructureStack extends cdk.Stack {
 
     // Create Lambda function for pre-token generation
     this.preTokenGenerationLambda = new lambda.Function(this, "PreTokenGenerationLambda", {
-      runtime: lambda.Runtime.NODEJS_22_X,
+      runtime: lambda.Runtime.NODEJS_24_X,
       handler: "pre-token-generation-handler.handler",
       code: lambda.Code.fromAsset(path.join(__dirname, "../lambda/pre-token-generation")),
       timeout: cdk.Duration.seconds(30),
@@ -337,7 +337,7 @@ export class InfrastructureStack extends cdk.Stack {
       
     // Create Lambda function for dynamic client registration
     const dcrFunction = new lambda.Function(this, 'DcrFunction', {
-      runtime: lambda.Runtime.NODEJS_22_X,
+      runtime: lambda.Runtime.NODEJS_24_X,
       handler: 'dcr.handler',
       code: lambda.Code.fromAsset(path.join(__dirname, '../lambda/dcr')),
       timeout: cdk.Duration.seconds(30),
@@ -392,7 +392,7 @@ export class InfrastructureStack extends cdk.Stack {
 
     // Create Lambda function for OpenID Configuration
     const openidConfigFunction = new lambda.Function(this, 'OpenIDConfigFunction', {
-      runtime: lambda.Runtime.NODEJS_22_X,
+      runtime: lambda.Runtime.NODEJS_24_X,
       handler: 'openid-config.handler',
       code: lambda.Code.fromAsset(path.join(__dirname, '../lambda/openid-config')),
       timeout: cdk.Duration.seconds(30),
