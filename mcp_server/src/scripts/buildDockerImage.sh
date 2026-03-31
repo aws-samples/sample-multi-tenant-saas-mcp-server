@@ -24,6 +24,8 @@ cd "$( dirname "$SCRIPT_DIR" )"
 echo "Building in: $(pwd)"
 
 # Build app (Dockerfile expects pre-built dist/)
+echo "Installing dependencies..."
+npm ci --include=dev
 echo "Running npm run build..."
 npm run build
 
