@@ -184,21 +184,63 @@ describe('MCP Server Integration', () => {
 
   // --- Prompts ---
 
-  test('lists registered prompts', async () => {
+  test('registers all expected prompts', async () => {
     const { prompts } = await client.listPrompts();
-    expect(prompts.length).toBeGreaterThan(0);
     const names = prompts.map(p => p.name);
-    expect(names).toContain('flight_search');
+    expect(names).toEqual(expect.arrayContaining([
+      'flight_search', 'booking_flow', 'loyalty_overview',
+      'policy_compliant_booking', 'hotel_search', 'book_flight_demo', 'book_hotel_demo',
+    ]));
   });
 
-  test('get prompt returns processed template', async () => {
+  test('prompt with required args interpolates all values', async () => {
     const result = await client.getPrompt({
       name: 'flight_search',
       arguments: { origin: 'NYC', destination: 'London', date: '2026-08-01' },
     });
     expect(result.messages).toHaveLength(1);
-    expect(result.messages[0].content.text).toContain('NYC');
-    expect(result.messages[0].content.text).toContain('London');
+    const text = result.messages[0].content.text;
+    expect(text).toContain('NYC');
+    expect(text).toContain('London');
+    expect(text).toContain('2026-08-01');
+  });
+
+  test('prompt with no args returns valid message', async () => {
+    const result = await client.getPrompt({ name: 'booking_flow' });
+    expect(result.messages).toHaveLength(1);
+    expect(result.messages[0].role).toBe('user');
+    expect(result.messages[0].content.text.length).toBeGreaterThan(0);
+  });
+
+  test('optional args fall back to defaults when omitted', async () => {
+    const result = await client.getPrompt({
+      name: 'flight_search',
+      arguments: { origin: 'SFO', destination: 'LAX', date: '2026-09-01' },
+    });
+    expect(result.messages[0].content.text).toContain('any flight is fine');
+  });
+
+  test('optional args are used when provided', async () => {
+    const result = await client.getPrompt({
+      name: 'flight_search',
+      arguments: { origin: 'SFO', destination: 'LAX', date: '2026-09-01', preferences: 'nonstop only' },
+    });
+    expect(result.messages[0].content.text).toContain('nonstop only');
+    expect(result.messages[0].content.text).not.toContain('any flight is fine');
+  });
+
+  test('conditional content appears only when optional arg is provided', async () => {
+    const without = await client.getPrompt({
+      name: 'policy_compliant_booking',
+      arguments: { trip_type: 'business' },
+    });
+    expect(without.messages[0].content.text).not.toContain('Your specified budget');
+
+    const withBudget = await client.getPrompt({
+      name: 'policy_compliant_booking',
+      arguments: { trip_type: 'business', budget: '$2000' },
+    });
+    expect(withBudget.messages[0].content.text).toContain('Your specified budget is $2000');
   });
 
   // --- Error handling ---
