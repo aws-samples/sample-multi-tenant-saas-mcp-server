@@ -338,20 +338,13 @@ export function useMcpConnection({
         clientSecret
       );
       
-      // Use manually provided bearer token if available, otherwise use OAuth tokens - exactly like Inspector
-      let token: string | undefined;
+      // Use manually provided bearer token if available, otherwise use OAuth tokens
       if (bearerToken) {
         // Manual bearer token provided - use it directly, skip OAuth
-        token = bearerToken;
+        let token = bearerToken;
         console.log("🔍 Token Debug:");
         console.log("  Using manual bearer token");
         console.log("  Token length:", token.length);
-      } else {
-        // No manual token - try OAuth
-        token = (await serverAuthProvider.tokens())?.access_token;
-      }
-      
-      if (token) {
         const authHeaderName = headerName || "Authorization";
         if (authHeaderName.toLowerCase() !== "authorization") {
           headers[authHeaderName] = token;
@@ -360,6 +353,9 @@ export function useMcpConnection({
           headers[authHeaderName] = `Bearer ${token}`;
         }
       }
+      // For OAuth: DO NOT add Authorization header to requestInit.headers
+      // The authProvider will handle adding fresh tokens automatically
+      // If we add tokens to requestInit.headers, they will override the authProvider's fresh tokens!
 
       // Create transport using our proxy - environment-aware URL
       const transportOptions: StreamableHTTPClientTransportOptions = {
