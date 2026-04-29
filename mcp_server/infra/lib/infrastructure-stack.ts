@@ -8,12 +8,14 @@ import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as cloudfront from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import * as logs from "aws-cdk-lib/aws-logs";
-import * as ecr from "aws-cdk-lib/aws-ecr";
 
 import * as path from "path";
 import { Construct } from "constructs";
 import { Policy } from "aws-cdk-lib/aws-iam";
 
+// Kept as a named alias of `cdk.StackProps` so future stack-specific props
+// can be added without changing the constructor signature.
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface InfrastructureStackProps extends cdk.StackProps {
   // Optional props that can be passed from the parent stack
 }
@@ -262,7 +264,9 @@ export class InfrastructureStack extends cdk.Stack {
       console.log("ADMIN_ROLE_NAME is not set, not adding to access role.");
     }
 
-    const principals = !!process.env.ADMIN_ROLE_NAME
+    // TODO: wire `_principals` into the trust policy below when admin role
+    // support is completed. Currently assembled but not yet consumed.
+    const _principals = process.env.ADMIN_ROLE_NAME
       ? [
           iam.Role.fromRoleName(this, "MCPServerAdminRole", process.env.ADMIN_ROLE_NAME),
           this.mcpServerTaskRole,

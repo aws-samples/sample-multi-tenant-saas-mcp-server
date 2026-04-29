@@ -4,6 +4,9 @@
   "author": "EMEA ISV SA",
   "license": "Apache-2.0",
   "description": "A sample multi-tenant SaaS MCP server",
+  "engines": {
+    "node": ">=22"
+  },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.806.0",
     "@aws-sdk/client-s3": "^3.808.0",
@@ -18,7 +21,8 @@
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^3.1.0",
     "log4js": "^6.9.1",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "zod": "4.3.6"
   },
   "scripts": {
     "build": "tsc && cp package*.json dist/",
@@ -26,13 +30,22 @@
     "start:prod": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "vitest run --config vitest.e2e.config.ts"
+    "test:e2e": "vitest run --config vitest.e2e.config.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@aws-sdk/client-cloudformation": "^3.1020.0",
     "@aws-sdk/client-cognito-identity-provider": "^3.1020.0",
     "@aws-sdk/client-lambda": "^3.1020.0",
+    "@eslint/js": "10.0.1",
+    "@types/cors": "2.8.19",
+    "@types/express": "5.0.6",
     "@types/node": "^22.15.17",
+    "eslint": "10.2.1",
+    "eslint-plugin-n": "17.24.0",
+    "typescript-eslint": "8.59.1",
     "vitest": "^4.1.2"
   }
 }

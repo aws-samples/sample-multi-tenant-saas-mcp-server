@@ -22,9 +22,7 @@ const REQUIRED_ENV_VARS = [
 
 type RequiredEnvVar = typeof REQUIRED_ENV_VARS[number];
 
-export type EnvConfig = {
-  [K in RequiredEnvVar]: string | undefined;
-} & {
+export type EnvConfig = Record<RequiredEnvVar, string | undefined> & {
   get(varName: string): string | undefined;
   get(varName: string, defaultValue: string): string;
   has(varName: string): boolean;
@@ -48,18 +46,14 @@ function loadEnv(): EnvConfig {
 
   const values: Partial<Record<RequiredEnvVar, string | undefined>> = {};
   for (const varName of REQUIRED_ENV_VARS) {
-    values[varName] = process.env[varName] !== undefined
-      ? process.env[varName]
-      : envConfig[varName];
+    values[varName] = process.env[varName] ?? envConfig[varName];
   }
 
   // Overloaded `get`: returns `string` when a default is provided, `string | undefined` otherwise.
   function get(varName: string): string | undefined;
   function get(varName: string, defaultValue: string): string;
   function get(varName: string, defaultValue?: string): string | undefined {
-    return process.env[varName] !== undefined
-      ? process.env[varName]
-      : (envConfig[varName] !== undefined ? envConfig[varName] : defaultValue);
+    return process.env[varName] ?? envConfig[varName] ?? defaultValue;
   }
 
   const config: EnvConfig = {

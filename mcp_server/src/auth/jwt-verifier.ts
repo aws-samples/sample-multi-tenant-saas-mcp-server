@@ -1,4 +1,5 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+import type { JwtPayload } from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
 import log4js from "../utils/logging.js";
 import config from '../utils/env-config.js';
@@ -10,20 +11,41 @@ const l = log4js.getLogger("JWT Verifier");
 // Cache for JWKS client to avoid recreating it
 let jwksClientInstance: jwksClient.JwksClient | null = null;
 
+/**
+ * Typed view of the Cognito access-token claims we consume.
+ *
+ * `JwtPayload` from `jsonwebtoken` declares an `[key: string]: any` index
+ * signature, which propagates `any` into anything that reads off the payload
+ * (triggering `no-unsafe-*` rules). This interface re-declares just the claims
+ * we actually read with concrete types so the downstream code stays type-safe.
+ */
+export interface CognitoJwtClaims extends JwtPayload {
+  client_id?: string;
+  scope?: string;
+  username?: string;
+  "cognito:username"?: string;
+  email?: string;
+  token_use?: string;
+  "custom:tenantId"?: string;
+  "custom:tenantTier"?: string;
+  tenantId?: string;
+  tenantTier?: string;
+}
+
 export async function processJwt(token: string): Promise<AuthInfo> {
   try {
-    const userData = await verifyToken(token) as JwtPayload;
+    const userData = (await verifyToken(token)) as CognitoJwtClaims;
     l.info('JWT verified successfully with Cognito');
 
     const response: AuthInfo = {
       token: token,
-      clientId: userData.client_id,
-      scopes: (userData.scope as string).split(' '),
+      clientId: userData.client_id ?? "",
+      scopes: (userData.scope ?? "").split(' '),
       expiresAt: userData.exp,
       extra: {
-        userId: userData.sub || "anonymous",
-        tenantId: userData["custom:tenantId"] || userData.tenantId || "",
-        tenantTier: userData["custom:tenantTier"] || userData.tenantTier || "basic",
+        userId: userData.sub ?? "anonymous",
+        tenantId: userData["custom:tenantId"] ?? userData.tenantId ?? "",
+        tenantTier: userData["custom:tenantTier"] ?? userData.tenantTier ?? "basic",
       }
     };
    

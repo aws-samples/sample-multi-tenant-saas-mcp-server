@@ -9,7 +9,7 @@ import {tokenMiddleware} from "./auth/token-middleware.js";
 import { handleMetadataRequest } from './auth/oauth-metadata.js';
 
 const l = log4js.getLogger("Index");
-const port = config.PORT || 3000;
+const port = config.PORT ?? 3000;
 
 const app = express();
 app.use(express.json());

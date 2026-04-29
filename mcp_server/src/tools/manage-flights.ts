@@ -1,4 +1,4 @@
-import { Faker, faker } from "@faker-js/faker";
+import { faker } from "@faker-js/faker";
 import type { CallToolResult, ServerRequest, ServerNotification } from "@modelcontextprotocol/sdk/types.js";
 import type { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import { getDynamoDbClient, TABLE_NAME } from "../services/dynamoDb.js";
@@ -29,7 +29,7 @@ export interface FlightInfo {
 
 const AIRLINES = ["Delta", "United", "American", "Southwest"];
 const FLIGHT_CLASSES = ["Economy", "Business", "First"];
-const FREQUENT_FLYER_PROGRAMS = {
+const FREQUENT_FLYER_PROGRAMS: Record<string, string> = {
   Delta: "SkyMiles",
   United: "MileagePlus",
   American: "AAdvantage",
@@ -85,7 +85,7 @@ async function createFlightBooking(
   }
 }
 
-export async function listFlights({
+export function listFlights({
   origin,
   destination,
   departure,
@@ -93,7 +93,7 @@ export async function listFlights({
   origin: string;
   destination: string;
   departure: string;
-}): Promise<CallToolResult> {
+}): CallToolResult {
   const flightCount = 4;
   const flights: FlightInfo[] = [];
 
@@ -170,7 +170,7 @@ export async function bookFlight(
   const scenario = faker.number.int({ min: 1, max: 3 });
 
   switch (scenario) {
-    case 1:
+    case 1: {
       // Successful booking
       const booking = await createFlightBooking(tenantId, {
         departureDateTime: departure.toString(),
@@ -201,6 +201,7 @@ export async function bookFlight(
           },
         ],
       };
+    }
 
     case 2:
       // Credit card denied

@@ -21,8 +21,8 @@ export class ApplicationStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: ApplicationStackProps) {
     super(scope, id, props);
 
-    const repositoryName = process.env.ECR_REPOSITORY_NAME || "mcp-server-on-ecs";
-    const imageTag = process.env.IMAGE_TAG || "latest";
+    const repositoryName = process.env.ECR_REPOSITORY_NAME ?? "mcp-server-on-ecs";
+    const imageTag = process.env.IMAGE_TAG ?? "latest";
 
     const repository = ecr.Repository.fromRepositoryName(this, "MCPServerEcrRepository", repositoryName);
 

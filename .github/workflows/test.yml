@@ -24,6 +24,8 @@ jobs:
           cache: npm
           cache-dependency-path: mcp_server/src/package-lock.json
       - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
       - run: npm test
 
   cdk-synth:
@@ -39,6 +41,8 @@ jobs:
           cache: npm
           cache-dependency-path: mcp_server/infra/package-lock.json
       - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
       - run: npx cdk synth --quiet
 
   docker-smoke-test:

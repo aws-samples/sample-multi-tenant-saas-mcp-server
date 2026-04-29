@@ -27,7 +27,9 @@ export async function getS3File(
     const stream = response.Body;
     if (stream instanceof Readable) {
       const chunks: Buffer[] = [];
-      for await (const chunk of stream) {
+      // S3 streams yield Buffer chunks, but Readable's default async-iterator type is `any`.
+      // Cast to a typed async iterable so the chunk type flows through.
+      for await (const chunk of stream as AsyncIterable<Buffer>) {
         chunks.push(chunk);
       }
 
@@ -60,6 +62,6 @@ export async function getS3File(
     throw new Error("Invalid response from S3");
   } catch (error) {
     console.error(`Error reading S3 file ${filename} for tenant ${tenantId}:`, error);
-    throw new Error(`Failed to read S3 file: ${filename}`);
+    throw new Error(`Failed to read S3 file: ${filename}`, { cause: error });
   }
 }

@@ -11,16 +11,7 @@ interface LoyaltyProgram {
   pointsToNextTier: number;
 }
 
-interface UserLoyaltyPrograms {
-  airlines: {
-    [key: string]: LoyaltyProgram;
-  };
-  hotels: {
-    [key: string]: LoyaltyProgram;
-  };
-}
-
-export async function getLoyaltyProgramInfo(): Promise<CallToolResult> {
+export function getLoyaltyProgramInfo(): CallToolResult {
   // Define tiers for each program
   const airlineTiers = ["Bronze", "Silver", "Gold", "Platinum", "Diamond"];
   const hotelTiers = ["Member", "Silver", "Gold", "Platinum", "Ambassador"];

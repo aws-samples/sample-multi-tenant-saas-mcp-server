@@ -6,6 +6,10 @@ interface MetadataInfo {
     taskId?: string;
 }
 
+interface EcsTaskMetadata {
+    TaskARN?: string;
+}
+
 async function initializeMetadata(): Promise<MetadataInfo> {
     const data: MetadataInfo = { version: packageInfo.version };
     
@@ -13,8 +17,8 @@ async function initializeMetadata(): Promise<MetadataInfo> {
     if (ecsMetadataUri) {
         try {
             const response = await fetch(`${ecsMetadataUri}/task`);
-            const taskData = await response.json();
-            data.taskId = taskData.TaskARN.split(':')[5];
+            const taskData = (await response.json()) as EcsTaskMetadata;
+            data.taskId = taskData.TaskARN?.split(':')[5];
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             console.warn('Failed to fetch ECS metadata:', message);
