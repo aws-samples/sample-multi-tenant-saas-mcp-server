@@ -4,17 +4,23 @@
     "module": "ESNext",
     "moduleResolution": "node",
     "outDir": "./dist",
-    "strict": false,
+    "rootDir": ".",
+    "strict": true,
+    "noImplicitAny": false,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "incremental": true,
     "resolveJsonModule": true
   },
   "include": [
-    "tools/*.ts",
-    "resources/*.ts", 
-    "services/*.ts",
-    "types/*.ts",
-    "utils/*.ts"
+    "**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests",
+    "scripts",
+    "**/*.test.ts",
+    "vitest.e2e.config.ts"
   ]
 }

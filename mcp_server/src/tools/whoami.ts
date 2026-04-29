@@ -1,16 +1,21 @@
 import log4js from "../utils/logging.js";
 import { verifyToken } from "../auth/jwt-verifier.js";
+import type { JwtPayload } from "jsonwebtoken";
+import type { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
+import type { CallToolResult, ServerRequest, ServerNotification } from "@modelcontextprotocol/sdk/types.js";
 
 const l = log4js.getLogger();
 
 /**
  * whoami tool implementation
- * Returns information about the current user based on their JWT token
+ * Returns information about the current user based on their JWT token.
+ * The `tokenMiddleware` guarantees `authInfo` is set before this handler runs.
  */
-export default async function whoami({authInfo}) {
+const whoami = async (extra: RequestHandlerExtra<ServerRequest, ServerNotification>): Promise<CallToolResult> => {
   try {
-    const token = authInfo.token;
-    const tokenResult = await verifyToken(token);
+    const { authInfo } = extra;
+    const token = authInfo!.token;
+    const tokenResult = (await verifyToken(token)) as JwtPayload;
     const result = {
         userInfo: tokenResult ? {
           username: tokenResult.username || tokenResult["cognito:username"] || tokenResult.sub,
@@ -42,15 +47,18 @@ export default async function whoami({authInfo}) {
       ]
     };
   } catch (error) {
-    l.error(`Error in whoami tool: ${error.message}`);
+    const message = error instanceof Error ? error.message : String(error);
+    l.error(`Error in whoami tool: ${message}`);
     return {
       isError: true,
       content: [
         {
           type: "text",
-          text: `Error processing request: ${error.message}`
+          text: `Error processing request: ${message}`
         }
       ]
     };
   }
-}
+};
+
+export default whoami;

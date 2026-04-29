@@ -1,23 +1,24 @@
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import jwksClient from "jwks-rsa";
 import log4js from "../utils/logging.js";
 import config from '../utils/env-config.js';
 import { InvalidTokenError, ServerError } from '@modelcontextprotocol/sdk/server/auth/errors.js';
+import type { AuthInfo } from '@modelcontextprotocol/sdk/server/auth/types.js';
 
 const l = log4js.getLogger("JWT Verifier");
 
 // Cache for JWKS client to avoid recreating it
-let jwksClientInstance = null;
+let jwksClientInstance: jwksClient.JwksClient | null = null;
 
-export async function processJwt(token) {
+export async function processJwt(token: string): Promise<AuthInfo> {
   try {
-    const userData = await verifyToken(token);
+    const userData = await verifyToken(token) as JwtPayload;
     l.info('JWT verified successfully with Cognito');
 
-    const response = {
+    const response: AuthInfo = {
       token: token,
-      client_id: userData.client_id,
-      scopes: userData.scope.split(' '),
+      clientId: userData.client_id,
+      scopes: (userData.scope as string).split(' '),
       expiresAt: userData.exp,
       extra: {
         userId: userData.sub || "anonymous",
@@ -28,14 +29,16 @@ export async function processJwt(token) {
    
     return response;
   } catch (error) {
-    l.error(`Cognito JWT verification failed: ${error.message}`);
-    if (error.name === 'TokenExpiredError') {
+    const err = error instanceof Error ? error : undefined;
+    const message = err?.message ?? String(error);
+    l.error(`Cognito JWT verification failed: ${message}`);
+    if (err?.name === 'TokenExpiredError') {
       throw new InvalidTokenError('Authentication failed: Your token has expired. Please log in again.');
-    } else if (error.name === 'JsonWebTokenError') {
+    } else if (err?.name === 'JsonWebTokenError') {
       throw new InvalidTokenError('Authentication failed: Invalid token format or signature.');
-    } else if (error.name === 'NotBeforeError') {
+    } else if (err?.name === 'NotBeforeError') {
       throw new InvalidTokenError('Authentication failed: Token not yet valid.');
-    } else if (error.message.includes('signing key')) {
+    } else if (message.includes('signing key')) {
       throw new InvalidTokenError('Authentication failed: Token was not issued by the expected authority.');
     } else {
       throw new ServerError('Authentication failed: Token verification error.');
@@ -46,7 +49,7 @@ export async function processJwt(token) {
 /**
  * Verify JWT token with Cognito
  */
-export function verifyToken(token) {
+export function verifyToken(token: string): Promise<JwtPayload | string | undefined> {
   return new Promise((resolve, reject) => {
     const userPoolId = config.COGNITO_USER_POOL_ID;
     const region = config.get('AWS_REGION', 'us-east-1');
@@ -106,7 +109,7 @@ function getJwksClient() {
 /**
  * Get signing key for JWT verification
  */
-function getKey(header, callback) {
+function getKey(header: jwt.JwtHeader, callback: jwt.SigningKeyCallback) {
   const client = getJwksClient();
   
   client.getSigningKey(header.kid, (err, key) => {
@@ -116,7 +119,7 @@ function getKey(header, callback) {
       return;
     }
     
-    const signingKey = key.publicKey || key.rsaPublicKey;
+    const signingKey = key?.getPublicKey();
     callback(null, signingKey);
   });
 }

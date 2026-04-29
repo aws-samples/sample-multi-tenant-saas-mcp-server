@@ -1,5 +1,6 @@
 import { QueryCommand } from "@aws-sdk/lib-dynamodb";
-import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult, ServerRequest, ServerNotification } from "@modelcontextprotocol/sdk/types.js";
+import type { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import { getDynamoDbClient, TABLE_NAME } from "../services/dynamoDb.js";
 import { Booking } from "../types/booking.js";
 
@@ -82,9 +83,9 @@ interface ListBookingsParams {
 
 export const listBookings = async (
   { type, id }: ListBookingsParams,
-  { authInfo}
+  { authInfo }: RequestHandlerExtra<ServerRequest, ServerNotification>
 ): Promise<CallToolResult> => {
-  const tenantId = authInfo.extra.tenantId
+  const tenantId = authInfo?.extra?.tenantId as string | undefined;
   if ( tenantId === undefined)
     return {
       isError: true,
