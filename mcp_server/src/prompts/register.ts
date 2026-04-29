@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
-export function registerPrompts(mcpServer) {
+export function registerPrompts(mcpServer: McpServer) {
   mcpServer.registerPrompt(
     'flight_search',
     {

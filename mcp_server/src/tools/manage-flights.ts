@@ -1,5 +1,6 @@
 import { Faker, faker } from "@faker-js/faker";
-import { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
+import type { CallToolResult, ServerRequest, ServerNotification } from "@modelcontextprotocol/sdk/types.js";
+import type { RequestHandlerExtra } from "@modelcontextprotocol/sdk/shared/protocol.js";
 import { getDynamoDbClient, TABLE_NAME } from "../services/dynamoDb.js";
 import { PutCommand } from "@aws-sdk/lib-dynamodb";
 import { FlightBooking, Passenger } from "../types/booking.js";
@@ -88,6 +89,10 @@ export async function listFlights({
   origin,
   destination,
   departure,
+}: {
+  origin: string;
+  destination: string;
+  departure: string;
 }): Promise<CallToolResult> {
   const flightCount = 4;
   const flights: FlightInfo[] = [];
@@ -149,13 +154,19 @@ export async function bookFlight(
     frequentFlyerNumber,
   }: {
     flightNumber: string;
-    departure: Date;
+    departure: string;
     flightClass: string;
     frequentFlyerNumber?: string;
   },
-  { authInfo }
-) {
-  const tenantId = authInfo.extra.tenantId;
+  { authInfo }: RequestHandlerExtra<ServerRequest, ServerNotification>
+): Promise<CallToolResult> {
+  const tenantId = authInfo?.extra?.tenantId as string | undefined;
+  if (!tenantId) {
+    return {
+      isError: true,
+      content: [{ type: "text", text: "ERROR: No tenant ID provided" }],
+    };
+  }
   const scenario = faker.number.int({ min: 1, max: 3 });
 
   switch (scenario) {
@@ -214,5 +225,8 @@ export async function bookFlight(
           },
         ],
       };
+    default:
+      // Unreachable: scenario is always 1-3
+      throw new Error(`Unexpected scenario: ${scenario}`);
   }
 }

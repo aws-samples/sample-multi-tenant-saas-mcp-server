@@ -61,9 +61,10 @@ export const handleMetadataRequest = (req, res) => {
     res.status(200).json(metadata);
     
   } catch (error) {
+    const err = error instanceof Error ? error : undefined;
     l.error('Unexpected error in OAuth metadata endpoint', {
-      error: error.message,
-      stack: error.stack
+      error: err?.message ?? String(error),
+      stack: err?.stack
     });
     
     // Return 503 for any unexpected errors
@@ -123,7 +124,7 @@ export const generateMetadata = (resourceServerUrl) => {
 
 
 export const validateConfiguration = (resourceServerUrl) => {
-  const errors = [];
+  const errors: string[] = [];
   
   // Check for required environment variables
   if (isEmpty(resourceServerUrl)) {

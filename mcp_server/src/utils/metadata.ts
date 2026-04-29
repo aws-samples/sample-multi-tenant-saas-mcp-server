@@ -16,7 +16,8 @@ async function initializeMetadata(): Promise<MetadataInfo> {
             const taskData = await response.json();
             data.taskId = taskData.TaskARN.split(':')[5];
         } catch (error) {
-            console.warn('Failed to fetch ECS metadata:', error.message);
+            const message = error instanceof Error ? error.message : String(error);
+            console.warn('Failed to fetch ECS metadata:', message);
         }
     }
     

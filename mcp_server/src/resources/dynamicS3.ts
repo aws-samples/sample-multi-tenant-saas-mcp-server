@@ -26,7 +26,7 @@ export async function getS3File(
     // Convert readable stream to string
     const stream = response.Body;
     if (stream instanceof Readable) {
-      const chunks = [] as any[];
+      const chunks: Buffer[] = [];
       for await (const chunk of stream) {
         chunks.push(chunk);
       }

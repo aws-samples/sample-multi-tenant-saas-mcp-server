@@ -1,13 +1,13 @@
-import { ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { listTenantResources } from "../services/s3.js";
 import { getS3File } from "./dynamicS3.js";
 
-export function registerResources(mcpServer) {
-  mcpServer.resource(
+export function registerResources(mcpServer: McpServer) {
+  mcpServer.registerResource(
     "tenant-files",
     new ResourceTemplate("s3://{tenantId}/{filename}", {
       list: async (extra) => {
-        const tenantId = extra.authInfo.extra.tenantId;
+        const tenantId = extra.authInfo!.extra!.tenantId as string;
         const files = await listTenantResources(tenantId);
 
         return {
@@ -21,11 +21,11 @@ export function registerResources(mcpServer) {
       }
     }),
     {
-      name: "Tenant S3 Files",
+      title: "Tenant S3 Files",
       description: "Access tenant-specific files from S3"
     },
     async (uri, variables, extra) => {
-      const actualTenantId = extra.authInfo.extra.tenantId;
+      const actualTenantId = extra.authInfo!.extra!.tenantId as string;
       const providedTenantId = variables.tenantId;
       const filename = variables.filename;
 
@@ -33,7 +33,7 @@ export function registerResources(mcpServer) {
         throw new Error("Access denied: cannot access other tenant's files");
       }
 
-      return await getS3File(filename, actualTenantId);
+      return await getS3File(filename as string, actualTenantId);
     }
   );
 }
