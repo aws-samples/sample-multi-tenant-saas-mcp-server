@@ -21,7 +21,7 @@
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "build": "tsc && cp *.js *.json dist/ && cp -r prompts mcp auth dist/",
+    "build": "tsc && cp *.js *.json dist/ && cp -r prompts mcp auth dist/ && mkdir -p dist/tools dist/resources && cp tools/*.js dist/tools/ && cp resources/*.js dist/resources/",
     "start": "npx tsx --env-file=.env --watch index.js",
     "start:prod": "node dist/index.js",
     "test": "vitest run",
