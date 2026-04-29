@@ -105,6 +105,14 @@ async function getOpenIDConfiguration() {
     const enhancedConfig = {
       ...cognitoConfig,
       registration_endpoint: registrationEndpointUrl,
+      grant_types_supported: [
+        ...(cognitoConfig.grant_types_supported || []),
+        "authorization_code"
+      ],
+      token_endpoint_auth_methods_supported: [
+        ...(cognitoConfig.token_endpoint_auth_methods_supported || []),
+        "none"
+      ],
       code_challenge_methods_supported: ["S256"]
     };
 
