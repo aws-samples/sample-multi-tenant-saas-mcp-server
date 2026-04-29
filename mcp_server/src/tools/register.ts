@@ -1,4 +1,4 @@
-import { coerce, z } from "zod";
+import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { listBookings } from "./list-bookings.js";
 import { bookFlight, listFlights } from "./manage-flights.js";
@@ -34,7 +34,7 @@ export function registerTools(mcpServer: McpServer) {
       inputSchema: {
         origin: z.string(),
         destination: z.string(),
-        departure: z.string().date(),
+        departure: z.iso.date(),
       },
     },
     listFlights
@@ -46,7 +46,7 @@ export function registerTools(mcpServer: McpServer) {
       description: "Book a flight using its flight number, departure date and time as well as the flight class and an optional frequent flyer number.",
       inputSchema: {
         flightNumber: z.string(),
-        departure: z.string().date(),
+        departure: z.iso.date(),
         flightClass: z.string(),
         frequentFlyerNumber: z.optional(z.string()),
       },
@@ -60,10 +60,10 @@ export function registerTools(mcpServer: McpServer) {
       description: "Book a hotel room by providing the hotel name, check-in and check-out dates, room type, number of guests (1-10), and an optional loyalty program number",
       inputSchema: {
         hotelName: z.string(),
-        checkIn: z.string().date(),
-        checkOut: z.string().date(),
+        checkIn: z.iso.date(),
+        checkOut: z.iso.date(),
         roomType: z.string(),
-        guests: coerce.number().int().min(1).max(10).default(1),
+        guests: z.coerce.number().int().min(1).max(10).default(1),
         loyaltyNumber: z.optional(z.string()),
       },
     },
@@ -76,9 +76,9 @@ export function registerTools(mcpServer: McpServer) {
       description: "Search for available hotels in a specified city for given check-in and check-out dates, with the number of guests (1-10).",
       inputSchema: {
         city: z.string(),
-        checkIn: z.string().date(),
-        checkOut: z.string().date(),
-        guests: coerce.number().int().min(1).max(10).default(1),
+        checkIn: z.iso.date(),
+        checkOut: z.iso.date(),
+        guests: z.coerce.number().int().min(1).max(10).default(1),
       },
     },
     listHotels

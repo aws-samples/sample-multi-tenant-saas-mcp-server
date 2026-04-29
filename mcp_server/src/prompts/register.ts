@@ -25,7 +25,7 @@ Let me search for available options using the flight search tool.
 
 Use find_flights with origin: "${origin}", destination: "${destination}", departure: "${date}"
 
-Based on your preferences: ${preferences || 'any flight is fine'}
+Based on your preferences: ${preferences ?? 'any flight is fine'}
 
 I'll analyze the results and highlight:
 1. Best value options
@@ -147,7 +147,7 @@ What are your travel dates and destination?`
           type: 'text',
           text: `I'll help you find hotels in ${city} for your stay from ${checkIn} to ${checkOut}.
 
-Let me search for available accommodations using list_hotels with city: "${city}", checkIn: "${checkIn}", checkOut: "${checkOut}", guests: ${guests || '1'}
+Let me search for available accommodations using list_hotels with city: "${city}", checkIn: "${checkIn}", checkOut: "${checkOut}", guests: ${guests ?? '1'}
 
 I'll show you hotels with:
 1. Best rates and availability
@@ -217,7 +217,7 @@ I'll provide you with:
 
 First, let me check your existing reservations using list_bookings.
 
-Now I'll process your hotel reservation using book_hotel with hotelName: "${hotelName}", checkIn: "${checkIn}", checkOut: "${checkOut}", roomType: "${roomType}", guests: ${guests || '1'}${loyaltyNumber ? `, loyaltyNumber: "${loyaltyNumber}"` : ''}
+Now I'll process your hotel reservation using book_hotel with hotelName: "${hotelName}", checkIn: "${checkIn}", checkOut: "${checkOut}", roomType: "${roomType}", guests: ${guests ?? '1'}${loyaltyNumber ? `, loyaltyNumber: "${loyaltyNumber}"` : ''}
 
 I'll provide you with:
 - Reservation confirmation number

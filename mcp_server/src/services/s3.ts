@@ -5,7 +5,7 @@ export const BUCKET_NAME = process.env.BUCKET_NAME;
 
 export async function getS3Client(tenantId: string) {
   const stsClient = new STSClient({
-    region: process.env.AWS_DEFAULT_REGION || "us-east-1",
+    region: process.env.AWS_DEFAULT_REGION ?? "us-east-1",
   });
 
   try {
@@ -29,7 +29,7 @@ export async function getS3Client(tenantId: string) {
           secretAccessKey: response.Credentials.SecretAccessKey!,
           sessionToken: response.Credentials.SessionToken,
         },
-        region: process.env.AWS_DEFAULT_REGION || "us-east-1",
+        region: process.env.AWS_DEFAULT_REGION ?? "us-east-1",
       });
 
       return s3Client;
@@ -93,6 +93,6 @@ export async function listTenantResources(tenantId: string): Promise<{
 
   } catch (error) {
     console.error(`Error listing resources for tenant ${tenantId}:`, error);
-    throw new Error(`Failed to list tenant resources: ${error}`);
+    throw new Error(`Failed to list tenant resources: ${String(error)}`, { cause: error });
   }
 }

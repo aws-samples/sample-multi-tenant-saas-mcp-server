@@ -1,3 +1,4 @@
+import type { Request, Response } from "express";
 import log4js from "../utils/logging.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import mcpServer from "./mcp-server.js";
@@ -5,7 +6,7 @@ import mcpErrors from "./mcp-errors.js";
 
 const l = log4js.getLogger("Transport");
 
-export const postRequestHandler = async (req, res) => {
+export const postRequestHandler = async (req: Request, res: Response): Promise<void> => {
   try {
 
     // Create new instances of MCP Server and Transport for each incoming request
@@ -16,20 +17,20 @@ export const postRequestHandler = async (req, res) => {
     });
 
     res.on("close", () => {
-      transport.close();
-      bookingMcpServer.close();
+      void transport.close();
+      void bookingMcpServer.close();
     });
     
     await bookingMcpServer.connect(transport);
     await transport.handleRequest(req, res, req.body);
-  } catch (err) {
+  } catch (_err) {
     if (!res.headersSent) {
       res.status(500).json(mcpErrors.internalServerError);
     }
   }
 };
 
-export const sessionRequestHandler = async (req, res) => {
+export const sessionRequestHandler = (req: Request, res: Response): void => {
   l.debug("-- Returning 405 not allowed --")
   res.status(405).set("Allow", "POST").json(mcpErrors.methodNotAllowed);
 };

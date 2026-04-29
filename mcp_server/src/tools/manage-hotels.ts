@@ -60,7 +60,7 @@ const FACILITIES = [
   "Business Center",
   "Conference Rooms",
 ];
-const LOYALTY_PROGRAMS = {
+const LOYALTY_PROGRAMS: Record<string, string> = {
   Marriott: "Bonvoy",
   Hilton: "Honors",
   Hyatt: "World of Hyatt",
@@ -120,17 +120,17 @@ async function createHotelBooking(
   }
 }
 
-export async function listHotels({
+export function listHotels({
   city,
   checkIn,
   checkOut,
-  guests,
+  guests: _guests,
 }: {
   city: string;
   checkIn: string;
   checkOut: string;
   guests: number;
-}): Promise<CallToolResult> {
+}): CallToolResult {
   const hotelCount = 4;
   const hotels: HotelInfo[] = [];
 
@@ -217,7 +217,7 @@ export async function bookHotel(
   const scenario = faker.number.int({ min: 1, max: 4 });
 
   switch (scenario) {
-    case 1:
+    case 1: {
       // Successful booking
       const booking = await createHotelBooking(tenantId, {
         checkInDate: checkIn.toString(),
@@ -242,6 +242,7 @@ export async function bookHotel(
           },
         ],
       };
+    }
 
     case 2:
       // Payment failed

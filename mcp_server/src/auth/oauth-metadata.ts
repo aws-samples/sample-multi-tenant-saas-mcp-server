@@ -1,4 +1,5 @@
 
+import type { Request, Response } from "express";
 import log4js from "../utils/logging.js";
 import config from '../utils/env-config.js';
 
@@ -24,7 +25,7 @@ const l = log4js.getLogger();
  * @example
  * app.get('/.well-known/oauth-protected-resource', handleMetadataRequest);
  */
-export const handleMetadataRequest = (req, res) => {
+export const handleMetadataRequest = (req: Request, res: Response): void => {
   l.debug('OAuth metadata endpoint accessed', {
     method: req.method,
     url: req.url,
@@ -34,9 +35,9 @@ export const handleMetadataRequest = (req, res) => {
   
   try {
     // Derive resource server URL from the incoming request
-    const protocol = req.get('X-Forwarded-Proto') || req.protocol;
+    const protocol = req.get('X-Forwarded-Proto') ?? req.protocol;
     const host = req.get('Host');
-    const resourceServerUrl = `${protocol}://${host}`;
+    const resourceServerUrl = `${protocol}://${host ?? ''}`;
 
     // Validate configuration first
     const validation = validateConfiguration(resourceServerUrl);
@@ -48,10 +49,11 @@ export const handleMetadataRequest = (req, res) => {
       });
       
       // Return 503 Service Unavailable for configuration errors
-      return res.status(503).json({
+      res.status(503).json({
         error: "service_unavailable",
         error_description: "OAuth metadata temporarily unavailable due to configuration error"
       });
+      return;
     }
     
     // Generate metadata
@@ -75,11 +77,18 @@ export const handleMetadataRequest = (req, res) => {
   }
 };
 
+interface OAuthProtectedResourceMetadata {
+  resource: string;
+  authorization_servers: string[];
+  scopes_supported: string[];
+  bearer_methods_supported: string[];
+}
+
 /**
  * OAuth 2.1 Protected Metadata Resource implementation
  * Provides RFC 9728 metadata validation and generation
  */
-export const generateMetadata = (resourceServerUrl) => {
+export const generateMetadata = (resourceServerUrl: string): OAuthProtectedResourceMetadata => {
   const userPoolId = config.get('COGNITO_USER_POOL_ID');
   const region = config.get('AWS_REGION');
   const dcrEnabled = config.get('DCR_ENABLED', 'false').toLowerCase() === 'true';
@@ -89,14 +98,14 @@ export const generateMetadata = (resourceServerUrl) => {
   const resource = `${resourceServerUrl}/mcp`;
   
   // Choose authorization server based on DCR_ENABLED flag
-  let authorizationServers;
+  let authorizationServers: string[];
   if (dcrEnabled && authorizationServerUrl) {
     // Use OAuth proxy authorization server URL when DCR is enabled
     authorizationServers = [authorizationServerUrl.replace(/\/$/, '')];
     l.debug('Using OAuth proxy authorization server (DCR enabled)');
   } else {
     // Use direct Cognito authorization server URL
-    authorizationServers = [`https://cognito-idp.${region}.amazonaws.com/${userPoolId}`];
+    authorizationServers = [`https://cognito-idp.${region ?? ''}.amazonaws.com/${userPoolId ?? ''}`];
     l.debug('Using direct Cognito authorization server (DCR disabled or no proxy URL)');
   }
   
@@ -109,7 +118,7 @@ export const generateMetadata = (resourceServerUrl) => {
   
   const bearerMethodsSupported = ["header"];
   
-  const metadata = {
+  const metadata: OAuthProtectedResourceMetadata = {
     resource,
     authorization_servers: authorizationServers,
     scopes_supported: scopesSupported,
@@ -123,7 +132,7 @@ export const generateMetadata = (resourceServerUrl) => {
 
 
 
-export const validateConfiguration = (resourceServerUrl) => {
+export const validateConfiguration = (resourceServerUrl: string): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
   
   // Check for required environment variables
@@ -149,7 +158,7 @@ export const validateConfiguration = (resourceServerUrl) => {
       if (url.protocol !== 'http:' && url.protocol !== 'https:') {
         errors.push('Invalid RESOURCE_SERVER_URL format: must use http or https protocol');
       }
-    } catch (error) {
+    } catch (_error) {
       errors.push('Invalid RESOURCE_SERVER_URL format: must be a valid URL');
     }
   }
@@ -170,6 +179,6 @@ export const validateConfiguration = (resourceServerUrl) => {
 };
 
 // Helper function to check if a value is effectively empty (null, undefined, or whitespace-only)
-const isEmpty = (value) => {
+const isEmpty = (value: string | undefined | null): boolean => {
   return !value || (typeof value === 'string' && value.trim() === '');
 };

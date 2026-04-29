@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
 import { AwsSolutionsChecks, NagSuppressions } from 'cdk-nag';
 import { InfrastructureStack } from '../lib/infrastructure-stack';
@@ -11,8 +10,8 @@ cdk.Aspects.of(app).add(new AwsSolutionsChecks({ verbose: true }));
 
 // Define the environment for all stacks
 const env = { 
-  account: process.env.CDK_DEFAULT_ACCOUNT || process.env.AWS_ACCOUNT_ID, 
-  region: process.env.CDK_DEFAULT_REGION || process.env.AWS_REGION || 'us-east-1'
+  account: process.env.CDK_DEFAULT_ACCOUNT ?? process.env.AWS_ACCOUNT_ID, 
+  region: process.env.CDK_DEFAULT_REGION ?? process.env.AWS_REGION ?? 'us-east-1'
 };
 
 // Create the infrastructure stack first
