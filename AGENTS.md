@@ -2,40 +2,35 @@
 
 ## Project
 
-Multi-tenant MCP server (TypeScript/Node.js) with OAuth 2.1 auth via Cognito, deployed on ECS. Includes a React MCP client deployed on CloudFront.
+Multi-tenant MCP server (TypeScript/Node.js) with OAuth 2.1 auth via Cognito, deployed on ECS.
 
 ## Repo Layout
 
 ```
 mcp_server/
-  src/           # Server source (JS/TS, Express, MCP SDK)
+  src/           # Server source (TypeScript, Express, MCP SDK)
   infra/         # CDK stacks (InfrastructureStack + ApplicationStack)
-mcp_client/      # React frontend + Lambda backend
 ```
 
 ## Key Commands
 
 ```bash
-# Server — build & test
+# Build & test
 cd mcp_server/src
 npm run build          # tsc + copy JS/JSON/dirs to dist/
 npm test               # unit/integration tests (vitest)
 npm run test:e2e       # e2e against live deployment (needs env vars below)
 
-# Server — deploy
+# Deploy
 cd mcp_server/infra
 npm install
 ./deploy.sh
 
-# Server — container image
+# Container image
 cd mcp_server/src
 npm run build
 finch build --platform linux/amd64 -t <ECR_URI>:latest .
 finch push <ECR_URI>:latest
-
-# Client — deploy
-cd mcp_client
-./deploy.sh
 ```
 
 ## Verification
@@ -79,7 +74,7 @@ CDK Nag (AwsSolutions) is enabled. Suppressions are in `infra/bin/infra.ts`.
 5. Authorization Code + PKCE via Cognito hosted UI → access token with `openid` scope
 6. Client → `POST /mcp` with `Authorization: Bearer <token>`
 
-Resource URL in oauth-metadata.js is derived from the request Host header (no config needed).
+Resource URL in `oauth-metadata.ts` is derived from the request Host header (no config needed).
 
 ## Tenant Isolation
 
@@ -92,15 +87,15 @@ Resource URL in oauth-metadata.js is derived from the request Host header (no co
 
 whoami, find_flights, book_flight, list_hotels, book_hotel, list_bookings, loyalty_info
 
-Tools registered in `mcp_server/src/mcp/mcp-server.js`. Booking tools use Faker for demo data and randomly simulate business errors (payment declined etc.).
+Tools registered in `mcp_server/src/mcp/mcp-server.ts`. Booking tools use Faker for demo data and randomly simulate business errors (payment declined etc.).
 
 ## Important Files
 
-- `src/index.js` — Express app entry point
-- `src/mcp/mcp-server.js` — MCP tool/resource/prompt registration
-- `src/auth/token-middleware.js` — Bearer auth middleware (derives resource URL from request)
-- `src/auth/oauth-metadata.js` — RFC 9728 metadata (derives resource URL from request)
-- `src/auth/jwt-verifier.js` — Cognito JWT verification
+- `src/index.ts` — Express app entry point
+- `src/mcp/mcp-server.ts` — MCP tool/resource/prompt registration
+- `src/auth/token-middleware.ts` — Bearer auth middleware (derives resource URL from request)
+- `src/auth/oauth-metadata.ts` — RFC 9728 metadata (derives resource URL from request)
+- `src/auth/jwt-verifier.ts` — Cognito JWT verification
 - `infra/lib/infrastructure-stack.ts` — Core AWS resources
 - `infra/lib/application-stack.ts` — ECS Express Gateway service
 - `infra/bin/infra.ts` — Stack wiring + CDK Nag suppressions

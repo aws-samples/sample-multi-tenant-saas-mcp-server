@@ -1,6 +1,6 @@
 # Multi-Tenant (SaaS) MCP Server Sample
 
-This repository contains a multi-tenant remote MCP server implementation using the Streamable HTTP transport written with the TypeScript SDK. The repository also includes an MCP client UI implementation that communicates with Amazon Bedrock, supporting remote MCP servers and AWS hosting.
+This repository contains a multi-tenant remote MCP server implementation using the Streamable HTTP transport written with the TypeScript SDK.
 
 ## MCP Server
 
@@ -17,35 +17,42 @@ A remote MCP server implementation for B2B travel booking with multi-tenant auth
 
 For a detailed architecture overview, see the [MCP Server README](./mcp_server/README.md).
 
-### Quick Start with MCP Server
+## Deploy
 
 ```bash
-# Deploy the MCP server
 cd mcp_server/infra
 npm install
-./deploy.sh 
-```
-
-## MCP Client Implementation
-
-An Amazon Bedrock powered MCP client implementation that allows the management of remote MCP servers and supports different authentication and authorization methods. 
-
-- **Architecture**: React frontend with AWS Lambda backend
-- **Security**: AWS Cognito authentication with comprehensive security scanning
-- **Deployment**: CloudFront CDN with S3 hosting and API Gateway
-- **Features**: Dynamic MCP server management, OAuth integration, Amazon Bedrock AI models, real-time streaming and MCP tools, resources and prompts
-
-![Client example](/resources/client.png)
-
-For a detailed architecture overview, see the [Client README](./mcp_client/README.md)
-
-### Quick Start with MCP Client
-
-```bash
-# Deploy the MCP client
-cd mcp_client
 ./deploy.sh
 ```
+
+Note the output URL (`https://mc-xxx.ecs.<region>.on.aws`). Sign up a user via the Cognito hosted UI using email format `you+tenantname@example.com` — the `+tenantname` suffix becomes your tenant ID (see [User Signup and Tenant Assignment](./mcp_server/README.md#user-signup-and-tenant-assignment)).
+
+## Try it
+
+Two ways to connect to the deployed server.
+
+### 1. MCP Inspector
+
+For protocol-level inspection — see tools/resources/prompts, invoke them manually, no LLM in the loop.
+
+```bash
+npx @modelcontextprotocol/inspector
+```
+
+Open the URL it prints, paste `https://mc-xxx.ecs.<region>.on.aws/mcp`, complete the OAuth flow, exercise tools.
+
+### 2. Amazon Quick Suite
+
+For end-to-end chat with the MCP tools. The Quick Suite MCP client handles OAuth 2.1 + PKCE + Dynamic Client Registration automatically.
+
+1. Open Amazon Quick Suite → **Connections** → **Integrations** → **Actions**.
+2. Choose **Model Context Protocol** → **+**.
+3. **MCP server endpoint**: `https://mc-xxx.ecs.<region>.on.aws/mcp`
+4. **Authentication**: User authentication (OAuth). Leave credentials blank — DCR will register Quick automatically.
+5. Approve in the Cognito hosted UI when prompted.
+6. Quick discovers all tools (`whoami`, `find_flights`, `book_flight`, `list_hotels`, `book_hotel`, `list_bookings`, `loyalty_info`).
+
+Full setup reference: [Model Context Protocol (MCP) integration](https://docs.aws.amazon.com/quick/latest/userguide/mcp-integration.html).
 
 ## Disclaimer
 
