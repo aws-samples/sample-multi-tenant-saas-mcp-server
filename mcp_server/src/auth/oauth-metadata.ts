@@ -94,8 +94,12 @@ export const generateMetadata = (resourceServerUrl: string): OAuthProtectedResou
   const dcrEnabled = config.get('DCR_ENABLED', 'false').toLowerCase() === 'true';
   const authorizationServerUrl = config.get('AUTHORIZATION_SERVER_WITH_DCR_URL');
   
-  // Construct dynamic fields from environment variables
-  const resource = `${resourceServerUrl}/mcp`;
+  // Per RFC 9728 the `resource` identifies the protected resource. We use the
+  // server origin (without the /mcp path) so that OAuth clients which derive
+  // `defaultResource` from their own `serverUrl` origin (e.g. mcp-use's
+  // useMcp which strips to `new URL(url).origin`) pass the SDK's
+  // `checkResourceAllowed` path-prefix check.
+  const resource = resourceServerUrl.replace(/\/+$/, '');
   
   // Choose authorization server based on DCR_ENABLED flag
   let authorizationServers: string[];
@@ -109,11 +113,11 @@ export const generateMetadata = (resourceServerUrl: string): OAuthProtectedResou
     l.debug('Using direct Cognito authorization server (DCR disabled or no proxy URL)');
   }
   
-  // Define static fields
+  // Only advertise scopes we actually allow via DCR. Public clients registered
+  // through the DCR Lambda default to `openid` only; advertising more would
+  // cause clients to request scopes Cognito then rejects with invalid_scope.
   const scopesSupported = [
     "openid",
-    "profile", 
-    "email"
   ];
   
   const bearerMethodsSupported = ["header"];

@@ -80,9 +80,16 @@ export const handler = async (event) => {
       return jsonResponse(405, { error: 'invalid_request', error_description: 'Only POST method is allowed' });
     }
 
-    // Validate Content-Type
-    const contentType = event.headers['Content-Type'] || event.headers['content-type'];
-    if (contentType !== 'application/json') {
+    // Validate Content-Type. Tolerate:
+    //   - Parameters (RFC 7231):  "application/json; charset=utf-8"
+    //   - Comma-joined duplicates (RFC 7230): "application/json, application/json"
+    //   - Case variations
+    const rawContentType = event.headers['Content-Type'] || event.headers['content-type'] || '';
+    const parts = rawContentType
+      .split(',')
+      .map(s => s.split(';')[0].trim().toLowerCase())
+      .filter(Boolean);
+    if (parts.length === 0 || !parts.every(p => p === 'application/json')) {
       return jsonResponse(400, { error: 'invalid_request', error_description: 'Content-Type must be application/json' });
     }
 

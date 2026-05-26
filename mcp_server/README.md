@@ -39,8 +39,8 @@ This diagram illustrates how the Model Context Protocol (MCP) Server handles sec
 
 **Step 3: Multi-Tenant Cognito Customization**
 - After the client obtains client_id it can now start the Authorization Code Grant to get the access token. This will involve redirection to the Amazon Cognito Hosted UI and callbacks.
-- Upon first user registration (3a) a Lambda `PostConfirmation` trigger automatically creates a custom claim `custom:tenantId` with a tenant extracted from the email alias user+tenant1@example.com. (See [User Signup and Tenant Assignment](#user-signup-and-tenant-assignment))
-- The `custom:tenantId`claim will be included in the access token via a Lambda `PreToken` trigger (3b).
+- Users are created by an admin via `manage-users.js`, which assigns `custom:tenantId` from the email alias (e.g. user+tenant1@example.com). Self-registration is disabled. (See [User Management](#user-management))
+- The `custom:tenantId` claim will be included in the access token via a Lambda `PreToken` trigger.
 
 **Step 4: MCP Server Access**
 - After obtaining a valid JWT Bearer access token, the MCP client can now make authenticated calls to the MCP server
@@ -55,14 +55,14 @@ This diagram illustrates how the Model Context Protocol (MCP) Server handles sec
 ### Deployment Architecture
 
 The system uses a two-stack CDK deployment:
-- **Infrastructure Stack**: DynamoDB, S3, Cognito, IAM roles
-- **Application Stack**: ECS Fargate, ALB, VPC, networking
+- **Infrastructure Stack**: DynamoDB, S3, Cognito, IAM roles, DCR Lambda, OpenID Config Lambda
+- **Application Stack**: ECS Express Gateway service, ECR image
 
 ### OAuth and Dynamic Client Registration (DCR)
 
 The sample includes a custom implementation of [Dynamic Client Registration (DCR)](https://tools.ietf.org/html/rfc7591) for Amazon Cognito. It also provides a separate **RFC 8414** OpenID Configuration endpoint to advertise the **registration_endpoint**. 
 
-The DCR endpoint is implemented via a custom AWS Lambda function. It creates app clients via the Amazon Cognito API and keeps track of the clients in a DynamoDB table. During creation the function first checks if the (to be registered) app client already exists based on the **client_name** and **redirect_uri**. This prevents the creation of new app clients for every registration request and provides a single client_id per application client (Claude Desktop, MCP Playground, Inspector etc.).
+The DCR endpoint is implemented via a custom AWS Lambda function. It creates app clients via the Amazon Cognito API and keeps track of the clients in a DynamoDB table. During creation the function first checks if the (to be registered) app client already exists based on the **client_name** and **redirect_uri**. This prevents the creation of new app clients for every registration request and provides a single client_id per application client (Claude Desktop, Quick Suite, MCP Inspector etc.).
 
 **Features:**
 - **Public Clients Only**: Only stores and retrieves public clients (no client secrets)
@@ -113,31 +113,34 @@ MCP_SERVER_URL=<YOUR_SERVER> TEST_USERNAME='user+tenant@example.com' TEST_PASSWO
 - **STS Tagging**: AWS credentials tagged with tenant context
 - **Scope Validation**: Tools check required OAuth scopes
 
-### User Signup and Tenant Assignment
+### User Management
 
-When users sign up and confirm their email, the system automatically assigns tenant information through a Cognito post-confirmation trigger:
+Users are created by an administrator via the `manage-users.js` script. Self-registration is disabled.
+
+```bash
+cd scripts
+
+# Auto-resolves User Pool ID and S3 bucket from CloudFormation stack outputs
+node manage-users.js create <username> <email>
+node manage-users.js list
+node manage-users.js delete <username>
+```
 
 #### Email Alias-Based Tenant Assignment
-Users can specify their tenant by using email aliases during signup:
+Tenant is derived from the email alias:
 - **Format**: `user+tenantname@example.com`
-- **Example**: `john+acmecorp@example.com` → Tenant ID: `acmecorp`
-- **Tier**: Users with aliases are assigned `standard` tier
-- **Resources**: Sample travel policies are uploaded to S3 under the tenant prefix
+- **Example**: `john+acmecorp@example.com` → Tenant ID: `acmecorp`, Tier: `standard`
+- If no alias is provided, a unique tenant ID is generated (`TENANT_{timestamp}_{random}`, Tier: `basic`)
 
-#### Fallback Tenant Generation
-If no alias is provided, the system generates a unique tenant ID:
-- **Format**: `TENANT_{timestamp}_{random}`
-- **Example**: `TENANT_L8X9K2_A7B3F1`
-- **Tier**: Auto-generated tenants receive `basic` tier
+The script also uploads sample travel policy files to S3 under the tenant prefix.
 
 ### ⚠️ Security Disclaimer
 
 **This tenant assignment mechanism is for DEMO PURPOSES ONLY and should NOT be used in production environments.**
 
 **Security Issues:**
-- **No Tenant Ownership Validation**: Anyone can claim any tenant name using email aliases
-- **Tenant Impersonation**: Users can access other tenants' data by using their tenant name in email aliases
-- **No Access Control**: No verification that users have legitimate access to claimed tenants
+- **No Tenant Ownership Validation**: An admin can assign any tenant name via email alias without external verification
+- **No Access Control**: No verification that the assigned tenant corresponds to a legitimate organization
 
 **Production Recommendations:**
 - Implement proper tenant invitation/approval workflows

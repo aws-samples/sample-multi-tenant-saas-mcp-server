@@ -139,10 +139,13 @@ describe('oauth-metadata', () => {
     });
 
     test('should construct resource URL correctly', () => {
+      // Per RFC 9728, `resource` identifies the protected resource. We use
+      // the server origin so OAuth clients that derive defaultResource from
+      // their own serverUrl.origin pass the SDK's path-prefix check.
       const testCases = [
-        { input: 'https://api.example.com', expected: 'https://api.example.com/mcp' },
-        { input: 'https://api.example.com:8080', expected: 'https://api.example.com:8080/mcp' },
-        { input: 'http://localhost:3000', expected: 'http://localhost:3000/mcp' },
+        { input: 'https://api.example.com', expected: 'https://api.example.com' },
+        { input: 'https://api.example.com:8080', expected: 'https://api.example.com:8080' },
+        { input: 'http://localhost:3000', expected: 'http://localhost:3000' },
       ];
 
       testCases.forEach(({ input, expected }) => {
@@ -197,7 +200,7 @@ describe('oauth-metadata', () => {
       const data = mockRes.json.mock.calls[0][0];
       expect(data).toHaveProperty('resource');
       expect(data).toHaveProperty('authorization_servers');
-      expect(data.resource).toBe('https://api.example.com/mcp');
+      expect(data.resource).toBe('https://api.example.com');
     });
 
     test('should return 503 when configuration is invalid', () => {

@@ -25,7 +25,15 @@ npm install
 ./deploy.sh
 ```
 
-Note the output URL (`https://mc-xxx.ecs.<region>.on.aws`). Sign up a user via the Cognito hosted UI using email format `you+tenantname@example.com` — the `+tenantname` suffix becomes your tenant ID (see [User Signup and Tenant Assignment](./mcp_server/README.md#user-signup-and-tenant-assignment)).
+Note the output URL (`https://mc-xxx.ecs.<region>.on.aws`). Create a user with the manage-users script:
+
+```bash
+cd mcp_server/scripts
+npm install
+node manage-users.js create myuser you+tenantname@example.com
+```
+
+The `+tenantname` suffix becomes the tenant ID (see [User Management](./mcp_server/README.md#user-management)).
 
 ## Try it
 
