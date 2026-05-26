@@ -73,6 +73,30 @@ export class ApplicationStack extends cdk.Stack {
       },
     });
 
+    // Register a Cognito Resource Server with identifier equal to the MCP
+    // server's public endpoint. This is required so Cognito accepts the
+    // `resource` parameter (RFC 8707 Resource Indicators) that mcp-use/MCP SDK
+    // sends on /authorize and /token. The advertised `resource` in the
+    // server's RFC 9728 protected-resource metadata is derived from the
+    // request Host at runtime, which for the ECS Express Gateway service is
+    // `https://${service.attrEndpoint}` — we use the same value here so the
+    // identifiers match exactly.
+    //
+    // Cognito matches resource-server identifiers by exact string, and
+    // mcp-use normalizes the resource value via `new URL(serverUrl)` which
+    // appends a trailing slash when the path is empty. We therefore register
+    // the identifier WITH a trailing slash.
+    const resourceIdentifier = `https://${service.attrEndpoint}/`;
+    new cognito.CfnUserPoolResourceServer(this, "MCPServerResourceServer", {
+      userPoolId: props.mcpServerUserPool.userPoolId,
+      identifier: resourceIdentifier,
+      name: "MCP Server",
+    });
+
     new cdk.CfnOutput(this, "Endpoint", { value: service.attrEndpoint });
+    new cdk.CfnOutput(this, "ResourceServerIdentifier", {
+      value: resourceIdentifier,
+      description: "Cognito resource server identifier for RFC 8707 resource indicators",
+    });
   }
 }

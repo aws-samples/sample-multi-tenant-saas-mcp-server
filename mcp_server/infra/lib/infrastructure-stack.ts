@@ -11,7 +11,6 @@ import * as logs from "aws-cdk-lib/aws-logs";
 
 import * as path from "path";
 import { Construct } from "constructs";
-import { Policy } from "aws-cdk-lib/aws-iam";
 
 // Kept as a named alias of `cdk.StackProps` so future stack-specific props
 // can be added without changing the constructor signature.
@@ -30,7 +29,6 @@ export class InfrastructureStack extends cdk.Stack {
   public readonly mcpServerUserPool: cognito.UserPool;
   public readonly mcpServerUserPoolDomain: cognito.UserPoolDomain;
 
-  public readonly postConfirmationLambda: lambda.Function;
   public readonly preTokenGenerationLambda: lambda.Function;
   
   // DCR resources (conditional)
@@ -70,21 +68,6 @@ export class InfrastructureStack extends cdk.Stack {
       enforceSSL: true,
     });
 
-    // Create Lambda function for post-confirmation tenant assignment
-    this.postConfirmationLambda = new lambda.Function(this, "PostConfirmationLambda", {
-      runtime: lambda.Runtime.NODEJS_24_X,
-      handler: "post-confirmation-handler.handler",
-      code: lambda.Code.fromAsset(path.join(__dirname, "../lambda/post-confirmation")),
-      timeout: cdk.Duration.seconds(30),
-      description: "Assigns tenant information to users after email confirmation",
-      environment: {
-        POLICY_BUCKET_NAME: this.mcpServerPolicyBucket.bucketName,
-      },
-    });
-
-    // Grant the post-confirmation Lambda permission to write to the S3 bucket
-    this.mcpServerPolicyBucket.grantPut(this.postConfirmationLambda);
-
     // Create Lambda function for pre-token generation
     this.preTokenGenerationLambda = new lambda.Function(this, "PreTokenGenerationLambda", {
       runtime: lambda.Runtime.NODEJS_24_X,
@@ -97,7 +80,7 @@ export class InfrastructureStack extends cdk.Stack {
     // Create Cognito User Pool for authentication
     this.mcpServerUserPool = new cognito.UserPool(this, "MCPServerUserPool", {
       userPoolName: "mcp-server-users",
-      selfSignUpEnabled: true,
+      selfSignUpEnabled: false,
       signInAliases: {
         email: true,
         username: true,
@@ -146,7 +129,6 @@ export class InfrastructureStack extends cdk.Stack {
     // Now add the Lambda triggers to the User Pool using CloudFormation directly
     const cfnUserPool = this.mcpServerUserPool.node.defaultChild as cognito.CfnUserPool;
     cfnUserPool.lambdaConfig = {
-      postConfirmation: this.postConfirmationLambda.functionArn,
       preTokenGeneration: this.preTokenGenerationLambda.functionArn,
       preTokenGenerationConfig: {
         lambdaVersion: 'V2_0',
@@ -156,13 +138,6 @@ export class InfrastructureStack extends cdk.Stack {
     
     // Grant Cognito permission to invoke the Lambda functions
     // Use a string concatenation instead of direct reference to break circular dependency
-    new lambda.CfnPermission(this, 'CognitoInvokePostConfirmationLambda', {
-      action: 'lambda:InvokeFunction',
-      functionName: this.postConfirmationLambda.functionName,
-      principal: 'cognito-idp.amazonaws.com',
-      sourceArn: `arn:aws:cognito-idp:${this.region}:${this.account}:userpool/${this.mcpServerUserPool.userPoolId}`,
-    });
-
     new lambda.CfnPermission(this, 'CognitoInvokePreTokenGenerationLambda', {
       action: 'lambda:InvokeFunction',
       functionName: this.preTokenGenerationLambda.functionName,
@@ -177,19 +152,6 @@ export class InfrastructureStack extends cdk.Stack {
       },
       managedLoginVersion: 2
     });
-
-    // Grant Lambda permission to update Cognito user attributes (specific to this User Pool)
-    this.postConfirmationLambda.role!.attachInlinePolicy(
-      new Policy(this, "UserPoolPolicy", {
-          statements: [new iam.PolicyStatement({
-          effect: iam.Effect.ALLOW,
-          actions: [
-            "cognito-idp:AdminUpdateUserAttributes",
-            "cognito-idp:AdminGetUser",
-          ],
-          resources: [this.mcpServerUserPool.userPoolArn]})]
-        })
-      );
 
     // Create the DynamoDB table
     this.mcpServerTravelBookingsTable = new dynamodb.Table(this, "MCPServerTravelBookings", {
@@ -544,12 +506,6 @@ export class InfrastructureStack extends cdk.Stack {
     cdk.Tags.of(openidConfigFunction).add('Component', 'DCR');
     cdk.Tags.of(this.dcrApi).add('Component', 'DCR');
   
-
-    new cdk.CfnOutput(this, 'MCPServerPostConfirmationLambdaArn', {
-      value: this.postConfirmationLambda.functionArn,
-      description: 'The ARN of the Post-Confirmation Lambda function for tenant assignment',
-      exportName: 'MCPServerPostConfirmationLambdaArn',
-    });
 
     new cdk.CfnOutput(this, 'MCPServerPreTokenGenerationLambdaArn', {
       value: this.preTokenGenerationLambda.functionArn,
