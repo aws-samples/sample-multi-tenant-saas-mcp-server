@@ -20,7 +20,101 @@ A Model Context Protocol (MCP) server implementation for B2B travel booking with
 
 ## Architecture
 
-![Architecture Overview](../resources/mcp-server-architecture.png)
+### Component Topology
+
+```mermaid
+flowchart LR
+  Client["MCP Client<br/>(Claude Desktop, etc.)"]
+
+  subgraph ECS["ECS Express Gateway"]
+    MCP["MCP Server<br/>(Express + MCP SDK)"]
+    OPR["/.well-known/<br/>oauth-protected-resource"]
+  end
+
+  subgraph DCR_Proxy["Dynamic Client Registration (DCR) Proxy"]
+    CF["CloudFront<br/>Distribution"]
+    APIGW["API Gateway"]
+    LambdaDCR["Lambda<br/>DCR Handler"]
+    LambdaOIDC["Lambda<br/>OpenID Config"]
+  end
+
+  subgraph Cognito["Amazon Cognito"]
+    UP["User Pool<br/>+ Managed Login"]
+    RS["Resource Server<br/>(RFC 8707)"]
+    PreToken["PreToken<br/>Generation λ"]
+  end
+
+  subgraph Data["Tenant-Isolated Data"]
+    DDB["DynamoDB<br/>Travel Bookings"]
+    S3["S3 Bucket<br/>Policy Documents"]
+  end
+
+  IAM["IAM Role<br/>+ STS Session Tags"]
+  DDBClients["DynamoDB<br/>Public Clients"]
+
+  Client -->|"1 POST /mcp (401)"| MCP
+  Client -->|"1a"| OPR
+  Client -->|"2a /.well-known/openid-configuration"| CF
+  Client -->|"2b /register"| CF
+  Client -->|"3 Auth Code + PKCE"| UP
+  Client -->|"4 POST /mcp + Bearer"| MCP
+
+  CF --> APIGW
+  APIGW --> LambdaDCR
+  APIGW --> LambdaOIDC
+  LambdaDCR -->|"Create App Client"| UP
+  LambdaDCR --> DDBClients
+
+  MCP -->|"5 Verify JWT"| UP
+  MCP -->|"AssumeRole + tenantId tag"| IAM
+  IAM --> DDB
+  IAM --> S3
+
+  PreToken -.->|"Injects tenantId claim"| UP
+```
+
+### Authentication & Authorization Sequence
+
+```mermaid
+sequenceDiagram
+  participant C as MCP Client
+  participant M as MCP Server (ECS)
+  participant CF as CloudFront/APIGW
+  participant DCR as Lambda DCR
+  participant OIDC as Lambda OpenID Config
+  participant Cog as Cognito User Pool
+  participant STS as STS
+  participant Data as DynamoDB / S3
+
+  C->>M: POST /mcp (no token)
+  M-->>C: 401 + WWW-Authenticate (resource_metadata URL)
+
+  C->>M: GET /.well-known/oauth-protected-resource
+  M-->>C: {authorization_servers, scopes, resource}
+
+  C->>CF: GET /.well-known/openid-configuration
+  CF->>OIDC: proxy
+  OIDC-->>C: {authorization_endpoint, token_endpoint, registration_endpoint, ...}
+
+  opt Dynamic Client Registration
+    C->>CF: POST /register {client_name, redirect_uris}
+    CF->>DCR: proxy
+    DCR->>Cog: CreateUserPoolClient
+    DCR-->>C: {client_id}
+  end
+
+  C->>Cog: Authorization Code + PKCE flow
+  Note over C,Cog: Cognito Hosted UI login → PreToken λ injects custom:tenantId
+  Cog-->>C: access_token (includes tenantId claim)
+
+  C->>M: POST /mcp + Authorization: Bearer <token>
+  M->>Cog: Verify JWT (JWKS)
+  M->>STS: AssumeRole (tag: tenantId)
+  STS-->>M: Scoped credentials
+  M->>Data: Query with tenant-isolated credentials
+  Data-->>M: Results
+  M-->>C: MCP response
+```
 
 ### Architecture Flow
 
@@ -38,9 +132,9 @@ This diagram illustrates how the Model Context Protocol (MCP) Server handles sec
 - Clients **optionally** can use Dynamic Client Registration (DCR) (2b) to automatically register their client with the OAuth provider. This requires a **custom OpenID configuration** (2a) that includes the DCR endpoint in the `registration_endpoint` field. The public clients will get created as Cognito application clients and are tracked in a separate DynamoDB table (See [Dynamic Client Registration](#oauth-and-dynamic-client-registration-dcr)).
 
 **Step 3: Multi-Tenant Cognito Customization**
-- After the client obtains client_id it can now start the Authorization Code Grant to get the access token. This will involve redirection to the Amazon Cognito Hosted UI and callbacks.
+- After the client obtains client_id it can now start the Authorization Code Grant to get the access token. This will involve redirection to the Amazon Cognito Managed Login UI and callbacks.
 - Users are created by an admin via `manage-users.js`, which assigns `custom:tenantId` from the email alias (e.g. user+tenant1@example.com). Self-registration is disabled. (See [User Management](#user-management))
-- The `custom:tenantId` claim will be included in the access token via a Lambda `PreToken` trigger.
+- The `custom:tenantId` claim will be included in the access token via a `PreTokenGeneration` Lambda trigger (V2_0).
 
 **Step 4: MCP Server Access**
 - After obtaining a valid JWT Bearer access token, the MCP client can now make authenticated calls to the MCP server
@@ -55,8 +149,8 @@ This diagram illustrates how the Model Context Protocol (MCP) Server handles sec
 ### Deployment Architecture
 
 The system uses a two-stack CDK deployment:
-- **Infrastructure Stack**: DynamoDB, S3, Cognito, IAM roles, DCR Lambda, OpenID Config Lambda
-- **Application Stack**: ECS Express Gateway service, ECR image
+- **Infrastructure Stack**: DynamoDB (bookings + public clients), S3, Cognito (User Pool + Resource Server), IAM roles, DCR Lambda, OpenID Config Lambda, API Gateway, CloudFront
+- **Application Stack**: ECS Express Gateway service (public HTTPS endpoint, no ALB/VPC needed), ECR image, Cognito Resource Server registration (RFC 8707)
 
 ### OAuth and Dynamic Client Registration (DCR)
 
