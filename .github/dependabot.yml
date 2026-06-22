@@ -1,0 +1,27 @@
+version: 2
+updates:
+  # CDK infrastructure package. Group aws-cdk (CLI) and aws-cdk-lib (library)
+  # so they are always bumped together. The CLI must support the cloud-assembly
+  # schema emitted by the library, otherwise `cdk synth` fails with a schema
+  # version mismatch.
+  - package-ecosystem: npm
+    directory: /mcp_server/infra
+    schedule:
+      interval: weekly
+    groups:
+      aws-cdk:
+        patterns:
+          - "aws-cdk"
+          - "aws-cdk-lib"
+
+  # MCP server application package.
+  - package-ecosystem: npm
+    directory: /mcp_server/src
+    schedule:
+      interval: weekly
+
+  # GitHub Actions workflows.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
