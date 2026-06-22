@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.806.0",
-    "@aws-sdk/client-s3": "^3.808.0",
+    "@aws-sdk/client-s3": "^3.1073.0",
     "@aws-sdk/client-sts": "^3.806.0",
     "@aws-sdk/lib-dynamodb": "^3.806.0",
     "@faker-js/faker": "^9.7.0",
