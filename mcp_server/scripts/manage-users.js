@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { CognitoIdentityProviderClient, AdminCreateUserCommand, AdminSetUserPasswordCommand, AdminUpdateUserAttributesCommand, ListUsersCommand, AdminDeleteUserCommand } from '@aws-sdk/client-cognito-identity-provider';
+import { CognitoIdentityProviderClient, AdminCreateUserCommand, AdminSetUserPasswordCommand, ListUsersCommand, AdminDeleteUserCommand } from '@aws-sdk/client-cognito-identity-provider';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { CloudFormationClient, DescribeStacksCommand } from '@aws-sdk/client-cloudformation';
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers';
@@ -64,7 +64,7 @@ if (!USER_POOL_ID) {
 const cognitoClient = new CognitoIdentityProviderClient({ region: REGION, credentials });
 const s3Client = new S3Client({ region: REGION, credentials });
 
-// Derive tenantId from email alias (same logic as post-confirmation Lambda)
+// Derive tenantId from email alias
 function deriveTenant(email) {
   let tenantId = null;
   let tenantTier = 'basic';
@@ -86,7 +86,7 @@ function deriveTenant(email) {
   return { tenantId, tenantTier };
 }
 
-// Upload S3 template files for tenant (same as post-confirmation Lambda)
+// Upload S3 template files for tenant
 async function uploadTenantFiles(tenantId) {
   if (!POLICY_BUCKET) {
     console.log('   ⚠ POLICY_BUCKET_NAME not set, skipping S3 upload');
@@ -120,12 +120,17 @@ async function createUser(username, email, password) {
   try {
     console.log(`Creating user: ${username} (${email})`);
 
+    // custom:tenantId is immutable, so it must be set at creation time.
+    const { tenantId, tenantTier } = deriveTenant(email);
+
     await cognitoClient.send(new AdminCreateUserCommand({
       UserPoolId: USER_POOL_ID,
       Username: username,
       UserAttributes: [
         { Name: 'email', Value: email },
         { Name: 'email_verified', Value: 'true' },
+        { Name: 'custom:tenantId', Value: tenantId },
+        { Name: 'custom:tenantTier', Value: tenantTier },
       ],
       MessageAction: 'SUPPRESS',
     }));
@@ -137,17 +142,6 @@ async function createUser(username, email, password) {
       Permanent: true,
     }));
     console.log(`   ✓ User created with permanent password`);
-
-    // Assign tenant (replicates post-confirmation Lambda)
-    const { tenantId, tenantTier } = deriveTenant(email);
-    await cognitoClient.send(new AdminUpdateUserAttributesCommand({
-      UserPoolId: USER_POOL_ID,
-      Username: username,
-      UserAttributes: [
-        { Name: 'custom:tenantId', Value: tenantId },
-        { Name: 'custom:tenantTier', Value: tenantTier },
-      ],
-    }));
     console.log(`   ✓ Tenant assigned: ${tenantId} (${tenantTier})`);
 
     // Upload S3 template files

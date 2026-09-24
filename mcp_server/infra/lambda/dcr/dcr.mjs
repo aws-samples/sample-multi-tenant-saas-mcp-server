@@ -180,7 +180,10 @@ export const handler = async (event) => {
         CallbackURLs: redirect_uris,
         GenerateSecret: false,
         ExplicitAuthFlows: ['ALLOW_USER_SRP_AUTH'],
-        SupportedIdentityProviders: ['COGNITO']
+        SupportedIdentityProviders: ['COGNITO'],
+        // Block clients from writing attributes; default is all mutable attributes writable.
+        WriteAttributes: [],
+        ReadAttributes: ['email']
       });
       
       const result = await cognito.send(createCmd);

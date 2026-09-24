@@ -139,11 +139,13 @@ TEST_PASSWORD='YourPassword!' \
 npm run test:e2e
 ```
 
-The test user needs a `tenantId` assigned (normally done by the PostConfirmation Lambda during hosted UI signup). For testing, use the helper script which creates the user and triggers the Lambda:
+The test user needs a `tenantId` assigned. Create one with the `manage-users.js` script, which creates the user, assigns the tenant from the email alias, and seeds the tenant's S3 files:
 
 ```bash
-node scripts/create-test-user.js <email> <password>
-# Example: node scripts/create-test-user.js testuser+acme@example.com 'MyPassword1!'
+cd ../scripts
+npm install
+node manage-users.js create <username> <email>
+# Example: node manage-users.js create testuser testuser+acme@example.com
 ```
 
 Use an email like `yourname+tenantname@example.com` — the alias (`tenantname`) becomes the tenant ID.

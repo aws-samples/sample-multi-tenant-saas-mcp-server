@@ -2,7 +2,7 @@
   "name": "mcp-server-cognito-triggers",
   "version": "1.0.0",
   "description": "Lambda functions for Cognito triggers in MCP Server",
-  "main": "post-confirmation-handler.js",
+  "main": "pre-token-generation-handler.js",
   "engines": {
     "node": ">=20.0.0"
   },
