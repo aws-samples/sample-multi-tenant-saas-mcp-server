@@ -54,7 +54,7 @@ TEST_PASSWORD='password' \
 npm run test:e2e
 ```
 
-Test user must have signed up via Cognito hosted UI (PostConfirmation Lambda assigns tenantId from email alias).
+Test user must be created by an admin via `scripts/manage-users.js` (self-registration is disabled); it assigns `custom:tenantId` from the email alias.
 
 ## CDK Stacks (mcp_server/infra)
 
@@ -78,7 +78,7 @@ Resource URL in `oauth-metadata.ts` is derived from the request Host header (no 
 
 ## Tenant Isolation
 
-- Users sign up as `user+tenantname@example.com` → PostConfirmation Lambda sets `custom:tenantId`
+- Users are created by an admin via `scripts/manage-users.js create <username> <email+tenant>` (self-registration is disabled) → the script sets the immutable `custom:tenantId` at creation time from the email alias
 - PreToken Lambda includes tenantId in access token
 - Server extracts tenantId from JWT, uses STS session tags for DynamoDB/S3 access
 - Isolation enforced at IAM policy level, not application level

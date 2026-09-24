@@ -103,8 +103,9 @@ export class InfrastructureStack extends cdk.Stack {
         },
       },
       customAttributes: {
+        // Immutable: set once at AdminCreateUser time by manage-users.js.
         tenantId: new cognito.StringAttribute({ 
-          mutable: true,
+          mutable: false,
           minLen: 1,
           maxLen: 50,
         }),

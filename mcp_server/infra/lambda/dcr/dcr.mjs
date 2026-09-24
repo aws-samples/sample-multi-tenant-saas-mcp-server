@@ -181,8 +181,7 @@ export const handler = async (event) => {
         GenerateSecret: false,
         ExplicitAuthFlows: ['ALLOW_USER_SRP_AUTH'],
         SupportedIdentityProviders: ['COGNITO'],
-        // SECURITY: block clients from writing attributes (esp. custom:tenantId);
-        // default is all mutable attributes writable.
+        // Block clients from writing attributes; default is all mutable attributes writable.
         WriteAttributes: [],
         ReadAttributes: ['email']
       });
