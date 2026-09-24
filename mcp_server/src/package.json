@@ -45,7 +45,7 @@
     "@types/node": "^22.15.17",
     "eslint": "10.2.1",
     "eslint-plugin-n": "17.24.0",
-    "typescript-eslint": "8.59.1",
+    "typescript-eslint": "8.61.1",
     "vitest": "^4.1.2"
   }
 }
